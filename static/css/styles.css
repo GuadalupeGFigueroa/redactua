@@ -1,0 +1,37 @@
+@import url('https//fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap');
+:root {
+    --color-primary: #3A4E40; /*Verde oscuro*/
+    --color-secundary: #B9B9B9; /*Verde claro*/
+    --color--background: #F4F5F6; /*Gris claro para el fondo*/
+    --color-warning: #E7C573; /*Amarillo para alertas*/
+    --color-danger: #C0392B; /*Rojo para faltas*/
+    --color-text: #333333; /*Negro para el texto*/
+    --color-white: #FFFFFF;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--color--background);
+    color: var(--color-text);
+}
+
+/* Clases personalizadas */
+.bg-redactua-primary {
+    background-color: var(--color-primary);
+    color: var(--colorr-white);
+}
+.text-redactua-primary {
+    color: var(--color-primary);
+}
+.btn-asiste {
+    background-color: var(--color-secundary);
+    color: var(--color-white);
+}
+.btn-falta {
+    background-color: var(--color-danger);
+    color: var(--color-white);
+}
+.btn-retraso {
+    background-color: var(--color-warning);
+    color: var(--color-white);
+}
