@@ -132,6 +132,9 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'), # Ruta a la carpeta de archivos estáticos
 ]
+# Redirecciones de Login y Logout
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/accounts/login'
 
 # redactua/settings.py
 

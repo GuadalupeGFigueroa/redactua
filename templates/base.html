@@ -12,6 +12,7 @@
 </head>
 <body>
 
+    {%if user.is_authenticated %}
     <nav class="navbar navbar-dark bg-redactua-primary px-3">
         <div class="d-flex align-items-center">
             <button class="navbar-toggler me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuLateral" aria-controls="menuLateral">
@@ -50,7 +51,7 @@
                     <a class="nav-link text-dark" href="#"><i class="bi bi-calendar-check me-2 text-redactua-primary"></i> Asistencia</a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-telephone-book me-2 text-redactua-primary"></i> Contactos</a>
+                    <a class="nav-link text-dark" href="#"><i class="bi bi-telephone me-2 text-redactua-primary"></i> Contactos</a>
                 </li>
                 <li class="nav-item mb-2">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-bar-chart me-2 text-redactua-primary"></i> Estadísticas</a>
@@ -62,6 +63,8 @@
         </div>
     </div>
 
+    {% endif %}
+    
     <main class="container mt-4 mb-5">
         {% block content %}
         {% endblock %}
