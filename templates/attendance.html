@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-redactua-primary fw-bold mb-0">Asistencia</h2>
+</div>
+
+<div class="card shadow-sm border-0 mb-4 bg-white rounded-4">
+    <div class="card-body">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control bg-light border-0" placeholder="Buscar por Nº Expte., Nombre...">
+            <button class="btn btn-light border-0" type="button"><i class="bi bi-search"></i></button>
+            <button class="btn btn-light border-0" type="button"><i class="bi bi-sliders"></i></button>
+        </div>
+
+        <div class="row g-2 align-items-center mb-2">
+            <div class="col-auto">
+                <label class="fw-bold me-2">Grupo:</label>
+            </div>
+            <div class="col">
+                <select class="form-select bg-light border-0">
+                    <option>Primaria</option>
+                    <option>Secundaria</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row g-2 align-items-center">
+            <div class="col-auto">
+                <i class="bi bi-calendar3 fs-4 text-dark"></i>
+            </div>
+            <div class="col">
+                <input type="date" class="form-control bg-light border-0" value="2026-03-10">
+            </div>
+            <div class="col-auto">
+                <span class="badge bg-white text-dark border border-dark py-2 px-3">martes</span>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4 px-2">
+            <div class="fs-6">
+                Registrados: <span class="fw-bold">19/20</span>
+            </div>
+            <div class="fs-6">
+                Asistencia: <span class="fw-bold">15/20</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="attendance-list mt-3">
+    
+    {% for student in students %}
+    <div class="card shadow-sm border-secondary border-opacity-50 rounded-4 mb-3 p-1 bg-white">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
+                
+                <h5 class="fw-bold mb-3 mb-sm-0">{{ student.first_name }} {{ student.last_name1 }} {% if student.last_name2 %}{{ student.last_name2 }}{% endif %}</h5>
+                
+                <div class="d-flex flex-column align-items-end">
+                    <div class="d-flex gap-2 mb-2 w-100 justify-content-end">
+                        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Asiste</button>
+                        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Retraso</button>
+                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold">Falta</button>
+                    </div>
+                    <div class="form-check form-check-inline m-0">
+                        <input class="form-check-input border-dark" type="checkbox" id="salida{{ student.id }}">
+                        <label class="form-check-label small" for="salida{{ student.id }}">Salida anticipada</label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info text-center rounded-4">
+        No hay beneficiarios registrados en este grupo.
+    </div>
+    {% endfor %}
+
+</div>
+
+<script>
+    // 1. Lógica para actualizar el día de la semana según la fecha
+    const dateInput = document.querySelector('input[type="date"]');
+    const dayBadge = document.querySelector('.badge');
+    
+    dateInput.addEventListener('change', (e) => {
+        const date = new Date(e.target.value);
+        const options = { weekday: 'long' };
+        let dayName = new Intl.DateTimeFormat('es-ES', options).format(date);
+        dayBadge.textContent = dayName;
+    });
+
+    // 2. Lógica para mostrar/ocultar horas
+ 
+    document.querySelectorAll('.form-check-input').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                console.log("Mostrar selector de hora...");
+                // Aquí añadiremos la lógica para inyectar el selector de hora
+            }
+        });
+    });
+
+   // 3. Lógica de botones (Asiste/Retraso/Falta)
+    document.querySelectorAll('.attendance-list .btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const parent = this.parentElement;
+            
+            // 1. Limpiamos todos los botones de esa fila dejándolos en gris (outline)
+            parent.querySelectorAll('.btn').forEach(b => {
+                b.classList.remove('btn-success', 'btn-warning', 'btn-danger', 'text-white', 'fw-bold');
+                b.classList.add('btn-outline-dark');
+            });
+            
+            // 2. Quitamos el gris al botón pulsado
+            this.classList.remove('btn-outline-dark');
+            
+            // 3. Aplicamos el color semáforo correcto según el texto
+            if(this.innerText === 'Asiste') {
+                this.classList.add('btn-success', 'fw-bold', 'text-white');
+            }
+            if(this.innerText === 'Retraso') {
+                this.classList.add('btn-warning', 'fw-bold', 'text-dark');
+            }
+            if(this.innerText === 'Falta') {
+                this.classList.add('btn-danger', 'fw-bold', 'text-white');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

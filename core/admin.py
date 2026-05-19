@@ -7,13 +7,19 @@ from .models import (
 # La clase worker hereda de UserAdmin, una clase especial de Django que nos permite personalizar el admin.
 admin.site.register(Worker, UserAdmin)
 
+@admin.register(Beneficiary)
+class BeneficiaryAdmin(admin.ModelAdmin):
+    filter_horizontal = ('external_professionals',)
+
+@admin.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+    filter_horizontal = ('beneficiaries',)
+
 # Registramos el resto de modelos para la obtención de datos.
 admin.site.register(WorkPlace)
 admin.site.register(ExternalProfessional)
 admin.site.register(FamilyCase)
-admin.site.register(Beneficiary)
 admin.site.register(TrainingAction)
-admin.site.register(Group)
 admin.site.register(Attendance)
 
 

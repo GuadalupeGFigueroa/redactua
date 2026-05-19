@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from .choices import NATIONALITY_CHOICES
 
 
 # 1. MODELOS DE USUARIO Y ROLES (AUTH)
@@ -19,11 +20,10 @@ class Worker(AbstractUser):
         verbose_name_plural = 'Trabajadores'
 
 
-# 2. MODELOS MAESTROS Y PROFESIONALES EXTERNOS
+# 2. MODELOS PARA PROFESIONALES EXTERNOS (PSTC, UTS, tutores, etc.)
 
 
 class WorkPlace(models.Model):
-    """Corresponde a WorkPlace del UML."""
     place_name = models.CharField(max_length=100, verbose_name="Lugar de trabajo")
 
     class Meta:
@@ -49,7 +49,7 @@ class ExternalProfessional(models.Model):
         return f"{self.first_name} {self.last_name1}"
 
 
-# 3. NÚCLEO DEL CRM: EXPEDIENTES Y BENEFICIARIOS
+# 3.  MODELOS PARA EXPEDIENTES Y BENEFICIARIOS
 
 
 class FamilyCase(models.Model):
@@ -68,23 +68,26 @@ class FamilyCase(models.Model):
         return f"Expediente {self.file_number}"
 
 class Beneficiary(models.Model):
-    """Corresponde a Beneficiary del UML."""
+  
     family_case = models.ForeignKey(FamilyCase, on_delete=models.CASCADE, related_name='beneficiaries')
     family_role = models.CharField(max_length=50, blank=True, null=True, verbose_name="Rol Familiar")
     first_name = models.CharField(max_length=50, verbose_name="Nombre")
     last_name1 = models.CharField(max_length=50, verbose_name="Primer apellido")
     last_name2 = models.CharField(max_length=50, blank=True, null=True, verbose_name="Segundo apellido")
     birth_date = models.DateField(null=True, blank=True, verbose_name="Fecha de nacimiento")
-    nationality = models.CharField(max_length=50, blank=True, null=True, verbose_name="Nacionalidad")
+    nationality = models.CharField(max_length=50, choices=NATIONALITY_CHOICES,default= 'España', verbose_name="Nacionalidad")
     phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name="Teléfono")
     email = models.EmailField(max_length=100, blank=True, null=True, verbose_name="Email")
     address = models.CharField(max_length=150, blank=True, null=True, verbose_name="Dirección")
-    postal_code = models.CharField(max_length=10, blank=True, null=True, verbose_name="Código Postal") # CharField para no perder el '0'
+    postal_code = models.CharField(max_length=10, blank=True, null=True, verbose_name="Código Postal") # Es CharField para no perder el '0' como Álava o Burgos
     start_date = models.DateField(null=True, blank=True, verbose_name="Fecha de alta")
     end_date = models.DateField(null=True, blank=True, verbose_name="Fecha de baja")
     active = models.BooleanField(default=True, verbose_name="Activo")
     derivation = models.BooleanField(default=False, verbose_name="Derivación")
-    school = models.CharField(max_length=100, blank=True, null=True, verbose_name="Centro escolar")
+    school = models.ForeignKey('WorkPlace', on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Centro escolar")
+    external_professionals = models.ManyToManyField('ExternalProfessional', blank=True, related_name='beneficiaries', verbose_name="Profesionales de referencia")
+
+
     notes = models.TextField(blank=True, null=True, verbose_name="Notas")
 
     class Meta:
@@ -117,7 +120,6 @@ class Group(models.Model):
     name = models.CharField(max_length=50, verbose_name="Nombre del grupo")
     description = models.TextField(blank=True, null=True, verbose_name="Descripción")
     training_action = models.ForeignKey(TrainingAction, on_delete=models.CASCADE, related_name='groups')
-    # Magia de Django: Crea la tabla intermedia Beneficiary_Group automáticamente
     beneficiaries = models.ManyToManyField(Beneficiary, related_name='enrolled_groups', blank=True)
 
     class Meta:
@@ -127,7 +129,7 @@ class Group(models.Model):
         return self.name
 
 class Attendance(models.Model):
-    """Corresponde a Attendance del UML. Histórico diario de presencias."""
+    """ Histórico diario asistencias."""
     ESTADOS = [
         ('PRESENT', 'Presente'),
         ('JUSTIFIED_ABSENCE', 'Falta Justificada'),
