@@ -1,16 +1,25 @@
 
-# Create your views here.
 from django.shortcuts import render
-from .models import Beneficiary
+from .models import Group, Beneficiary
 
 def home_view(request):
     """Renderiza la plantilla base para comprobar la estructura de navegación"""
     return render(request, 'base.html')
 
 def attendance_view(request):
-    # 1. Traemos a todos los beneficiarios de la base de datos
-    # En el futuro filtraremos por el grupo seleccionado (ej. Primaria)
-    students = Beneficiary.objects.all()
+    """Muestra la pantalla de asistencia con los grupos y el alumnado correspondiente"""
+    groups = Group.objects.all()
+    if groups.exists():
+        first_group = groups.first()
+        students = first_group.beneficiaries.all()
+    else:
+        students = []
     
-    # 2. Pasamos los datos al HTML mediante el "contexto" (el diccionario final)
-    return render(request, 'attendance.html', {'students': students})
+    context = {
+        'groups': groups,
+        'students': students,
+    }
+ 
+    
+    # Pasamos los datos al HTML mediante el "contexto" (el diccionario final)
+    return render(request, 'attendance.html', context)

@@ -19,9 +19,12 @@
                 <label class="fw-bold me-2">Grupo:</label>
             </div>
             <div class="col">
-                <select class="form-select bg-light border-0">
-                    <option>Primaria</option>
-                    <option>Secundaria</option>
+                <select class="form-select bg-light border-0" id="groupSelect">
+                    {% for group in groups %}
+                        <option value ="{{ group.id }}">{{ group.name }}</option>
+                    {% empty %}
+                        <option value="">No hay grupos creados></option>
+                    {% endfor %}
                 </select>
             </div>
         </div>

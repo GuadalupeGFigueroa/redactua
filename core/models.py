@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone # Necesario para la detección de la fecha actual
 from .choices import NATIONALITY_CHOICES
 
 
@@ -16,8 +17,7 @@ class Worker(AbstractUser):
     
     class Meta:
         db_table = 'WORKER'
-        verbose_name = 'Trabajador'
-        verbose_name_plural = 'Trabajadores'
+    
 
 
 # 2. MODELOS PARA PROFESIONALES EXTERNOS (PSTC, UTS, tutores, etc.)
@@ -53,8 +53,14 @@ class ExternalProfessional(models.Model):
 
 
 class FamilyCase(models.Model):
-    """Corresponde a FamilyCase del UML."""
-    file_number = models.CharField(max_length=50, unique=True, verbose_name="Nº Expediente")
+    """ El número de expediente debe de ser único. """
+    file_number = models.CharField(
+        max_length=50, 
+        unique=True, 
+        blank=True, 
+        verbose_name="Nº Expediente", 
+        help_text="Dejar este campo en blanco para que el sistema lo asigne automáticamente."
+    )
     creation_date = models.DateField(auto_now_add=True, verbose_name="Fecha de creación")
     notes = models.TextField(blank=True, null=True, verbose_name="Notas")
     external_professional = models.ForeignKey(
@@ -66,6 +72,23 @@ class FamilyCase(models.Model):
 
     def __str__(self):
         return f"Expediente {self.file_number}"
+    def save(self, *args, **kwargs):
+        # Si el usuario no introduce el número de expediente a mano
+        if not self.file_number:
+            current_year = timezone.now().year
+            # Buscamos el último expediente que se haya creado.
+            last_case = FamilyCase.objects.order_by('id').last()
+            if last_case and last_case.file_number and '/' in last_case.file_number:
+                #Extraemos el número final del ultimo expediente y lo pasamos a entero.
+                last_number = int(last_case.file_number.split('/')[1])
+                next_number = last_number + 1
+            else:
+                next_number = 1
+            # Formatemos el nuevo número: año actual + barra + el nuevo número rellenado con ceros
+            self.file_number = f"{current_year}/{str(next_number).zfill(3)}"
+        
+        super().save(*args, **kwargs)
+
 
 class Beneficiary(models.Model):
   
@@ -92,6 +115,7 @@ class Beneficiary(models.Model):
 
     class Meta:
         db_table = 'BENEFICIARY'
+        verbose_name_plural = 'Beneficiaries'
 
     def __str__(self):
         return f"{self.first_name} {self.last_name1}"
