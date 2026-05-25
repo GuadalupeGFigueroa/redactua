@@ -21,9 +21,9 @@
             <div class="col">
                 <select class="form-select bg-light border-0" id="groupSelect">
                     {% for group in groups %}
-                        <option value ="{{ group.id }}">{{ group.name }}</option>
+                        <option value="{{ group.id }}">{{ group.name }}</option>
                     {% empty %}
-                        <option value="">No hay grupos creados></option>
+                        <option value="">No hay grupos creados</option>
                     {% endfor %}
                 </select>
             </div>
@@ -52,7 +52,7 @@
     </div>
 </div>
 
-<div class="attendance-list mt-3">
+<div class="attendance-list mt-3" id="studentsList">
     
     {% for student in students %}
     <div class="card shadow-sm border-secondary border-opacity-50 rounded-4 mb-3 p-1 bg-white">
@@ -65,7 +65,7 @@
                     <div class="d-flex gap-2 mb-2 w-100 justify-content-end">
                         <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Asiste</button>
                         <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Retraso</button>
-                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold">Falta</button>
+                        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Falta</button>
                     </div>
                     <div class="form-check form-check-inline m-0">
                         <input class="form-check-input border-dark" type="checkbox" id="salida{{ student.id }}">
@@ -107,32 +107,91 @@
         });
     });
 
-   // 3. Lógica de botones (Asiste/Retraso/Falta)
-    document.querySelectorAll('.attendance-list .btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const parent = this.parentElement;
-            
+   // 3. Lógica de botones (Asiste/Retraso/Falta) a través de eventos.
+   const studentsListContainer = document.getElementById('studentsList');
+
+   studentsListContainer.addEventListener('click', function(e) {
+    // Comprobamos si el elemento sobre el que se ha hecho click es uno de los botones.
+        if (e.target.tagName === 'BUTTON' && e.target.classList.contains('btn')) {
+            const btn = e.target;
+            const parent = btn.parentElement; // Obtenemos el padre del botón pulsado.
             // 1. Limpiamos todos los botones de esa fila dejándolos en gris (outline)
             parent.querySelectorAll('.btn').forEach(b => {
-                b.classList.remove('btn-success', 'btn-warning', 'btn-danger', 'text-white', 'fw-bold');
+                b.classList.remove('btn-success', 'btn-warning', 'btn-danger', 'text-white', 'text-dark','fw-bold');
                 b.classList.add('btn-outline-dark');
             });
             
-            // 2. Quitamos el gris al botón pulsado
-            this.classList.remove('btn-outline-dark');
+            // 2. Quitamos el gris al botón pulsado.
+            btn.classList.remove('btn-outline-dark');
+
+            // 3. Aplicamos el color correcto según el texto (estilo semáforo)
+            const text = btn.innerText.trim(); // Aplicamos trim() para eliminar espacios en blanco.
+            if(text === 'Asiste') {
+                btn.classList.add('btn-success', 'fw-bold', 'text-white');
+            } else if (text === 'Retraso') {
+                btn.classList.add('btn-warning', 'fw-bold', 'text-dark');
+            } else if (text === 'Falta') {
+                btn.classList.add('btn-danger', 'fw-bold', 'text-white');
+            }
+        }
             
-            // 3. Aplicamos el color semáforo correcto según el texto
-            if(this.innerText === 'Asiste') {
-                this.classList.add('btn-success', 'fw-bold', 'text-white');
+   });
+  
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const groupSelect = document.getElementById('groupSelect');
+        const studentsList = document.getElementById('studentsList');
+
+        groupSelect.addEventListener('change', function() {
+            const groupId = this.value;
+
+            if (!groupId) {
+                studentsList.innerHTML = '<div class="alert alert-info text-center rounded-4">Seleccione un grupo para ver los alumnos.</div>';
+                return;
             }
-            if(this.innerText === 'Retraso') {
-                this.classList.add('btn-warning', 'fw-bold', 'text-dark');
-            }
-            if(this.innerText === 'Falta') {
-                this.classList.add('btn-danger', 'fw-bold', 'text-white');
-            }
+
+            fetch(`/api/group/${groupId}/students/`)
+                .then(response => response.json())
+                .then(data => {
+                    studentsList.innerHTML = ''; 
+
+                    if (data.students.length === 0) {
+                        studentsList.innerHTML = '<div class="alert alert-info text-center rounded-4">No hay beneficiarios registrados en este grupo.</div>';
+                        return;
+                    }
+
+                    // Pintamos las tarjetas con tu diseño exacto de Bootstrap
+                    data.students.forEach(student => {
+                        const card = `
+                        <div class="card shadow-sm border-secondary border-opacity-50 rounded-4 mb-3 p-1 bg-white">
+                            <div class="card-body">
+                                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
+                                    
+                                    <h5 class="fw-bold mb-3 mb-sm-0">${student.full_name}</h5>
+                                    
+                                    <div class="d-flex flex-column align-items-end">
+                                        <div class="d-flex gap-2 mb-2 w-100 justify-content-end">
+                                            <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Asiste</button>
+                                            <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Retraso</button>
+                                            <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Falta</button>
+                                        </div>
+                                        <div class="form-check form-check-inline m-0">
+                                            <input class="form-check-input border-dark" type="checkbox" id="salida${student.id}">
+                                            <label class="form-check-label small" for="salida${student.id}">Salida anticipada</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                        studentsList.insertAdjacentHTML('beforeend', card);
+                    });
+                })
+                .catch(error => console.error('Error en la llamada Fetch:', error));
         });
     });
 </script>
-
 {% endblock %}
