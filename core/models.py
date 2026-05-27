@@ -156,13 +156,14 @@ class Attendance(models.Model):
     """ Histórico diario asistencias."""
     ESTADOS = [
         ('PRESENT', 'Presente'),
+        ('LATE', 'Retraso'),
         ('JUSTIFIED_ABSENCE', 'Falta Justificada'),
         ('UNJUSTIFIED_ABSENCE', 'Falta Injustificada'),
     ]
     
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='attendances')
     beneficiary = models.ForeignKey(Beneficiary, on_delete=models.CASCADE, related_name='attendances')
-    date = models.DateField(auto_now_add=True, verbose_name="Fecha de la sesión")
+    date = models.DateField(verbose_name="Fecha de la sesión")
     status = models.CharField(max_length=20, choices=ESTADOS, default='PRESENT', verbose_name="Estado")
 
     class Meta:

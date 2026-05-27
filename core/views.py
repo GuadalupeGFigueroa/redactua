@@ -1,7 +1,8 @@
 
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import Group, Beneficiary
+from .models import Group, Beneficiary, Attendance
+import json
 
 def home_view(request):
     """Renderiza la plantilla base para comprobar la estructura de navegación"""
@@ -44,3 +45,44 @@ def get_students_by_group(request, group_id):
     except Group.DoesNotExist:
             # En caso de que no se encuentre el grupo, devolvemos un mensaje de error
         return JsonResponse({'error': 'Grupo no encontrado'}, status=404)
+
+def update_attendance(request):
+    """API interna: Recibe un POST de JavaScript y guarda la asistencia en la base de datos"""
+    # Solo aceptamos los datos si vienen en el método POST (envío de datos)
+    if request.method == 'POST':
+        try:
+            # 1. Desempaquetamos el JSON que nos envvía JavaScript
+            data = json.loads(request.body)
+            student_id = data.get('student_id')
+            group_id = data.get('group_id')
+            date_string = data.get('date') 
+            status_text = data.get('status')
+
+            # Validamos que nos han llegado todos los datos que necesitamos
+            if not all([student_id, group_id, date_string, status_text]):
+                return JsonResponse({'success': False,'error': 'Faltan datos'}, status=400)
+            
+            # 2. Traducimos el texto del botón al formato de la base de datos
+            status_mapping = {
+                'Asiste' : 'PRESENT',
+                'Retraso' : 'LATE',
+                'Falta' : 'UNJUSTIFIED_ABSENCE',
+            }
+            db_status = status_mapping.get(status_text, 'PRESENT')
+
+            # 3. Lógica para guardar los datos (DJANGO ORM)
+            # En caso de existir un registro, lo actualiza, sino lo crea.
+            Attendance.objects.update_or_create(
+                group_id=group_id,
+                beneficiary_id=student_id,
+                date=date_string,
+                defaults={'status': db_status}
+            )
+            return JsonResponse({'success': True, 'message': 'Asistencia registrada correctamente'})
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        
+    #Medida de seguridad si alguien intenta entrar por URL
+    return JsonResponse({'error': 'Metodo no permitido'}, status=405)       
+
