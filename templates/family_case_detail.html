@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="text-redactua-primary fw-bold mb-0">Expediente {{ case.file_number }}</h2>
+        <span class="text-muted small">
+            <i class="bi bi-calendar3 me-1"></i> Abierto el {{ case.creation_date|date:"d/m/Y" }}
+        </span>
+    </div>
+    
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{% url 'beneficiary_create' case.id %}" class="btn btn-dark fw-semibold rounded-3"><i class="bi bi-person-plus me-2"></i>Añadir miembro</a>
+        <button class="btn btn-dark fw-semibold rounded-3"><i class="bi bi-pencil-square me-2"></i>Editar expte.</button>
+        <button class="btn btn-dark fw-semibold rounded-3"><i class="bi bi-box-arrow-right me-2"></i>Dar de baja</button>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4 bg-white rounded-4 border-start border-4 border-success">
+    <div class="card-body p-4">
+        <div class="row">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <p class="text-muted mb-1 small fw-bold text-uppercase">Profesional Externo Asignado</p>
+                <p class="mb-0 fw-semibold fs-5">{{ case.external_professional|default:"Ninguno" }}</p>
+            </div>
+            <div class="col-md-8">
+                <p class="text-muted mb-1 small fw-bold text-uppercase">Notas Generales del Núcleo Familiar</p>
+                <p class="mb-0">{{ case.notes|default:"Sin observaciones registradas." }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="text-redactua-primary fw-bold mb-3 mt-5">Miembros de la Unidad Familiar</h4>
+
+<div class="row g-4">
+    {% for member in members %}
+        <div class="col-12 col-xl-6">
+            <div class="card shadow-sm border-0 h-100 rounded-4 {% if member.is_tutor %}bg-light border-bottom border-4 border-dark{% else %}bg-white{% endif %}">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            {% if member.is_tutor %}
+                                <span class="badge bg-dark mb-2 px-3 py-2"><i class="bi bi-shield-check me-1"></i> Tutor/a Legal</span>
+                            {% else %}
+                                <span class="badge bg-success mb-2 px-3 py-2"><i class="bi bi-person me-1"></i> Menor beneficiario</span>
+                            {% endif %}
+                            
+                            <h5 class="fw-bold mb-0 mt-1">{{ member.first_name }} {{ member.last_name1 }} {{ member.last_name2|default:"" }}</h5>
+                            <span class="text-muted small">{{ member.family_role|default:"" }}</span>
+                        </div>
+                        <button class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">Editar</button>
+                    </div>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-sm-6">
+                            <p class="text-muted mb-0 small">Teléfono</p>
+                            <p class="fw-semibold mb-0">{{ member.phone_number|default:"-" }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="text-muted mb-0 small">Nacionalidad</p>
+                            <p class="fw-semibold mb-0">{{ member.nationality }}</p>
+                        </div>
+                        {% if member.school %}
+                        <div class="col-12">
+                            <p class="text-muted mb-0 small">Centro Escolar</p>
+                            <p class="fw-semibold mb-0"><i class="bi bi-building me-2"></i>{{ member.school }}</p>
+                        </div>
+                        {% endif %}
+                        <div class="col-12">
+                            <p class="text-muted mb-0 small">Observaciones</p>
+                            <p class="small mb-0">{{ member.notes|default:"-" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-light text-center border rounded-4 py-5 shadow-sm">
+                <i class="bi bi-people fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="fw-bold">Expediente vacío</h5>
+                <p class="text-muted mb-0">Aún no se han añadido tutores ni menores a esta familia.</p>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

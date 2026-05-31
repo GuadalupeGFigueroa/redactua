@@ -1,7 +1,8 @@
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .models import Group, Beneficiary, Attendance
+from .models import Group, Beneficiary, Attendance, FamilyCase
+from .forms import FamilyCaseForm, BeneficiaryForm
 import json
 
 def home_view(request):
@@ -86,3 +87,66 @@ def update_attendance(request):
     #Medida de seguridad si alguien intenta entrar por URL
     return JsonResponse({'error': 'Metodo no permitido'}, status=405)       
 
+# Gestión de expedientes
+
+def family_case_list(request):
+    """Muestra la lista de todos los expedientes familiares"""
+    # Obtenemos todos los expeedientes ordenados del más nuevo al más antiguo
+    cases = FamilyCase.objects.all().order_by('-creation_date')
+    return render(request, 'family_case_list.html', {'cases': cases})
+
+def family_case_create(request):
+    """Maneja la creación de un nuevo expediente familiar"""
+    # Si el usuario envía datos por POST, creamos el expediente
+    if request.method == 'POST':
+        form = FamilyCaseForm(request.POST)
+        # Validamos el formulario
+        if form.is_valid():
+            form.save()
+            return redirect('family_case_list')
+        
+    # Si el usuario envía datos por GET, mostramos el formulario vacio    
+    else:
+        form = FamilyCaseForm()
+
+    return render(request, 'family_case_form.html', {'form': form})
+
+def family_case_detail(request, case_id):
+    """Muestra la ficha completa de un expediente y la lista de sus miembros"""
+    # Buscamos la carpeta expediente y en caso de no existir se señala con un error 404.
+    case = get_object_or_404(FamilyCase, id=case_id)
+
+    # Obtenemos los miembros del expediente priorizando a los y las tutoras legales y a los menores por fecha de nacimiento
+    members = case.beneficiaries.all().order_by('-is_tutor', 'birth_date')
+
+    return render(request, 'family_case_detail.html', {
+        'case': case,
+        'members': members
+    })
+
+def beneficiary_create(request, case_id):
+    """Añade un nuevo miembro (tutor/a o menor) a un expediente existente"""
+    # Busca la carpeta (expediente) a la que vamos a vincular a esta persona
+    case = get_object_or_404(FamilyCase, id=case_id)
+    
+    if request.method == 'POST':
+        form = BeneficiaryForm(request.POST)
+        if form.is_valid():
+            # 2. Guarda el formulario en memoria, pero le decimos a Django que ESPERE
+            new_member = form.save(commit=False)
+            
+            # 3. Inyecta el expediente antes de guardarlo definitivamente
+            new_member.family_case = case
+            new_member.save()
+
+            # Asignamos a que grupo va a asistir
+            selected_groups = form.cleaned_data.get('groups')
+            if selected_groups: 
+                new_member.enrolled_groups.set(selected_groups)
+            
+            # 4. Devolvemos datos actualizados
+            return redirect('family_case_detail', case_id=case.id)
+    else:
+        form = BeneficiaryForm()
+        
+    return render(request, 'beneficiary_form.html', {'form': form, 'case': case})

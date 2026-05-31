@@ -93,6 +93,7 @@ class FamilyCase(models.Model):
 class Beneficiary(models.Model):
   
     family_case = models.ForeignKey(FamilyCase, on_delete=models.CASCADE, related_name='beneficiaries')
+    is_tutor = models.BooleanField(default=False, verbose_name="Es tutor/a legal")
     family_role = models.CharField(max_length=50, blank=True, null=True, verbose_name="Rol Familiar")
     first_name = models.CharField(max_length=50, verbose_name="Nombre")
     last_name1 = models.CharField(max_length=50, verbose_name="Primer apellido")

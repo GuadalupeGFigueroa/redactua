@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="text-redactua-primary fw-bold mb-0">Añadir miembro</h2>
+        <span class="text-muted small">Vinculando al expediente {{ case.file_number }}</span>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0 bg-white rounded-4">
+            <div class="card-body p-4">
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        {% for field in form %}
+                            <div class="col-md-6 mb-3" id="container-{{ field.name }}">
+                                
+                                {% if field.name == 'is_tutor' or field.name == 'derivation' %}
+                                    <div class="form-check form-switch fs-5 mt-4">
+                                        {{ field }}
+                                        <label class="form-check-label fw-bold ms-2 text-dark" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    </div>
+                                    
+                                {% elif field.name == 'groups' %}
+                                    <label class="fw-bold mb-2 text-dark small text-uppercase">{{ field.label }}</label>
+                                    <div class="bg-light p-3 rounded form-control border-0" style="max-height: 180px; overflow-y: auto;">
+                                        {{ field }}
+                                    </div>
+                                    
+                                {% else %}
+                                    <label class="fw-bold mb-2 text-dark small text-uppercase">{{ field.label }}</label>
+                                    {{ field }}
+                                {% endif %}
+                                
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1 fw-bold">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 border-top pt-4">
+                        <a href="{% url 'family_case_detail' case.id %}" class="btn btn-outline-dark rounded-pill px-4 fw-semibold">Cancelar</a>
+                        <button type="submit" class="btn btn-dark rounded-pill px-4 fw-semibold shadow-sm">
+                            Guardar miembro
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tutorSwitch = document.getElementById('id_is_tutor'); 
+    
+    // Usamos el ID exacto que genera el bucle HTML
+    const schoolContainer = document.getElementById('container-school');
+    const groupsContainer = document.getElementById('container-groups');
+    
+    const schoolInput = document.getElementById('id_school');
+
+    function toggleFields() {
+        // Validación de seguridad para asegurar que los elementos existen en el DOM
+        if (!tutorSwitch || !schoolContainer || !groupsContainer) return;
+
+        if (tutorSwitch.checked) {
+            // Es un adulto: Escondemos colegio y grupos
+            schoolContainer.style.display = 'none';
+            groupsContainer.style.display = 'none';
+            
+            // Vaciamos el colegio
+            if(schoolInput) schoolInput.value = ''; 
+            
+            // Desmarcamos todos los grupos que pudieran estar seleccionados
+            document.querySelectorAll('input[name="groups"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+        } else {
+            // Es un menor: Mostramos colegio y grupos
+            schoolContainer.style.display = 'block';
+            groupsContainer.style.display = 'block';
+        }
+    }
+
+    // Ejecutamos al inicio y enganchamos el evento
+    toggleFields();
+    if(tutorSwitch) {
+        tutorSwitch.addEventListener('change', toggleFields);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,52 @@
+from django import forms
+from .models import FamilyCase, Beneficiary, Group
+
+class FamilyCaseForm(forms.ModelForm):
+    """Formulario para crear o editar el expediente familiar"""
+    class Meta:
+        model = FamilyCase
+        fields = ['file_number', 'external_professional', 'notes']
+
+        # Inyectamos las clases de bootstrap 
+        widgets = {
+            'file_number': forms.TextInput(attrs={'class': 'form-control bg-light border-0', 'placeholder': 'Ejemplo: 2026/080'}),
+            'external_professional': forms.Select(attrs={'class': 'form-select bg-light border-0'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control bg-light border-0', 'rows': 3, 'placeholder': 'Observaciones generales del núcleo familiar...'}),
+        }
+class BeneficiaryForm(forms.ModelForm):
+    """Formular para crear o editar un beneficiario"""
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        widget=forms.CheckboxSelectMultiple(),
+        required=False,
+        label="Asignar a grupos de asistencia"
+    )
+
+    class Meta:
+        model = Beneficiary
+        
+        fields = [
+            'is_tutor', 'family_role', 'first_name', 'last_name1', 'last_name2', 'birth_date', 
+            'nationality', 'phone_number', 'email', 'address', 'postal_code', 
+            'school', 'groups','derivation', 'notes'
+        ]
+
+        widgets = {
+            'is_tutor': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
+            'family_role': forms.TextInput(attrs={'class': 'form-select bg-light', 'placeholder': 'Ejemplo: Padre, Madre, Abuela, etc.'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control bg-light'}),
+            'last_name1': forms.TextInput(attrs={'class': 'form-control bg-light'}),
+            'last_name2': forms.TextInput(attrs={'class': 'form-control bg-light'}),
+            # Usamos 'type': 'date' para que salga el calendario nativo del navegador.
+            'birth_date': forms.DateInput(attrs={'class': 'form-control bg-light', 'type': 'date'}),
+            'nationality': forms.Select(attrs={'class': 'form-select bg-light'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control bg-light'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control bg-light'}),
+            'address': forms.TextInput(attrs={'class': 'form-control bg-light'}),
+            'postal_code': forms.TextInput(attrs={'class': 'form-control bg-light'}),
+            'school': forms.Select(attrs={'class': 'form-select bg-light'}),
+            'derivation': forms.CheckboxInput(attrs={'class': 'form-check-input border-dark'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control bg-light', 'rows': 3}),
+        }
+
+
