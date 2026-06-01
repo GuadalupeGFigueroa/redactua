@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="text-redactua-primary fw-bold mb-0">Estadísticas de Asistencia</h2>
+        <span class="text-muted small">Análisis de participación y control de absentismo</span>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-5 bg-white rounded-4 border-start border-4 border-dark">
+    <div class="card-body p-4">
+        <form method="GET" action="{% url 'statistics' %}" class="row g-3 align-items-end">
+            
+            <div class="col-md-3">
+                <label class="fw-bold mb-2 text-dark small text-uppercase">Desde fecha</label>
+                <input type="date" name="start_date" value="{{ current_start }}" class="form-control bg-light">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="fw-bold mb-2 text-dark small text-uppercase">Hasta fecha</label>
+                <input type="date" name="end_date" value="{{ current_end }}" class="form-control bg-light">
+            </div>
+            
+            <div class="col-md-4">
+                <label class="fw-bold mb-2 text-dark small text-uppercase">Filtrar por menor</label>
+                <select name="student_id" class="form-select bg-light">
+                    <option value="">Todos los menores de la entidad</option>
+                    {% for student in students %}
+                        <option value="{{ student.id }}" {% if current_student == student.id|stringformat:"s" %}selected{% endif %}>
+                            {{ student.first_name }} {{ student.last_name1 }} {{ student.last_name2|default:"" }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-dark fw-semibold w-100 shadow-sm">Filtrar</button>
+                <a href="{% url 'statistics' %}" class="btn btn-outline-secondary fw-semibold" title="Limpiar filtros">
+                    <i class="bi bi-eraser"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if total_records > 0 %}
+    <div class="row g-4 mb-5">
+        <div class="col-6 col-md-auto flex-grow-1">
+            <div class="card border-0 bg-light shadow-sm h-100 rounded-4">
+                <div class="card-body text-center p-4">
+                    <h1 class="display-4 fw-bold text-dark mb-0">{{ total_records }}</h1>
+                    <p class="text-muted fw-semibold mb-0 text-uppercase small">Registros Evaluados</p>
+                </div>
+            </div>
+        </div>
+
+        {% for item in stats %}
+            <div class="col-6 col-md-auto flex-grow-1">
+                <div class="card border-0 shadow-sm h-100 rounded-4 
+                    {% if item.status == 'PRESENT' %}bg-success bg-opacity-10
+                    {% elif item.status == 'LATE' %}bg-warning bg-opacity-10
+                    {% elif item.status == 'UNJUSTIFIED_ABSENCE' %}bg-danger bg-opacity-10
+                    {% else %}bg-secondary bg-opacity-10{% endif %}">
+                    
+                    <div class="card-body text-center p-4">
+                        <h1 class="display-4 fw-bold mb-0 
+                            {% if item.status == 'PRESENT' %}text-success
+                            {% elif item.status == 'LATE' %}text-warning text-dark
+                            {% elif item.status == 'UNJUSTIFIED_ABSENCE' %}text-danger
+                            {% else %}text-secondary{% endif %}">
+                            {{ item.total }}
+                            <span class="fs-5 text-muted opacity-75">({{ item.percentage }}%)</span>
+                        </h1>
+                        <p class="fw-semibold mb-0 text-uppercase small
+                            {% if item.status == 'PRESENT' %}text-success
+                            {% elif item.status == 'LATE' %}text-warning text-dark
+                            {% elif item.status == 'UNJUSTIFIED_ABSENCE' %}text-danger
+                            {% else %}text-secondary{% endif %}">
+                            
+                            {% if item.status == 'PRESENT' %}Presentes
+                            {% elif item.status == 'LATE' %}Retrasos
+                            {% elif item.status == 'JUSTIFIED_ABSENCE' %}Faltas Justificadas
+                            {% elif item.status == 'UNJUSTIFIED_ABSENCE' %}Faltas Injustificadas
+                            {% else %}{{ item.status }}{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="alert alert-light text-center border rounded-4 py-5 shadow-sm mt-4">
+        <i class="bi bi-clipboard-data fs-1 text-muted mb-3 d-block"></i>
+        <h5 class="fw-bold">No hay datos en este rango</h5>
+        <p class="text-muted mb-0">Prueba a modificar las fechas o seleccionar otro menor.</p>
+    </div>
+{% endif %}
+{% endblock %}

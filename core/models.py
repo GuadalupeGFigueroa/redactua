@@ -166,6 +166,7 @@ class Attendance(models.Model):
     beneficiary = models.ForeignKey(Beneficiary, on_delete=models.CASCADE, related_name='attendances')
     date = models.DateField(verbose_name="Fecha de la sesión")
     status = models.CharField(max_length=20, choices=ESTADOS, default='PRESENT', verbose_name="Estado")
+    incidence_time = models.TimeField(blank=True, null=True, verbose_name="Hora de incidencia")
 
     class Meta:
         db_table = 'ATTENDANCE'

@@ -96,6 +96,12 @@
         const options = { weekday: 'long' };
         let dayName = new Intl.DateTimeFormat('es-ES', options).format(date);
         dayBadge.textContent = dayName;
+    
+    if (dayBadge){
+        dayBadge.textContent = dayName;
+    }
+    
+    e.target.form.submit(); // Recargamos la página
     });
 
     // 2. Lógica para mostrar/ocultar horas
@@ -104,7 +110,6 @@
         checkbox.addEventListener('change', (e) => {
             if(e.target.checked) {
                 console.log("Mostrar selector de hora...");
-                // Aquí añadiremos la lógica para inyectar el selector de hora
             }
         });
     });

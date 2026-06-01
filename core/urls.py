@@ -11,4 +11,5 @@ urlpatterns = [
     path('expedientes/nuevo/', views.family_case_create, name='family_case_create'),
     path('expedientes/<int:case_id>/', views.family_case_detail, name='family_case_detail'),
     path('expedientes/<int:case_id>/nuevo-miembro/', views.beneficiary_create, name='beneficiary_create'),
+    path('estadisticas/', views.statistics_view, name='statistics'),
 ]

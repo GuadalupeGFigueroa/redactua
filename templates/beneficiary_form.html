@@ -73,11 +73,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!tutorSwitch || !schoolContainer || !groupsContainer) return;
 
         if (tutorSwitch.checked) {
-            // Es un adulto: Escondemos colegio y grupos
+            // Es un adulto: Escondemos centro escolar y grupos
             schoolContainer.style.display = 'none';
             groupsContainer.style.display = 'none';
             
-            // Vaciamos el colegio
+            // Vaciamos el centro escolar
             if(schoolInput) schoolInput.value = ''; 
             
             // Desmarcamos todos los grupos que pudieran estar seleccionados

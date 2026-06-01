@@ -2,9 +2,23 @@
 {% load static %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-redactua-primary fw-bold mb-0">Expedientes Familiares</h2>
-    <a href="{% url 'family_case_create' %}" class="btn btn-dark rounded-pill px-4 fw-semibold shadow-sm">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    
+    <form method="GET" action="{% url 'family_case_list' %}" class="d-flex w-100" style="max-width: 500px;">
+        <div class="input-group shadow-sm">
+            <input type="text" name="q" value="{{ query }}" class="form-control border-dark border-end-0 bg-white" placeholder="Buscar expediente, profesional o nombre...">
+            
+            {% if query %}
+                <a href="{% url 'family_case_list' %}" class="btn border-dark border-start-0 bg-white text-muted">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+            {% endif %}
+            
+            <button class="btn btn-dark fw-semibold px-4" type="submit">Buscar</button>
+        </div>
+    </form>
+
+    <a href="{% url 'family_case_create' %}" class="btn btn-dark rounded-pill px-4 fw-semibold shadow-sm text-nowrap">
         <i class="bi bi-plus-lg me-2"></i>Nuevo Expediente
     </a>
 </div>

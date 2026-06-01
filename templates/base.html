@@ -39,7 +39,13 @@
         <div class="offcanvas-body">
             <ul class="nav flex-column fs-5">
                 <li class="nav-item mb-2">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-folder2-open me-2 text-redactua-primary"></i> Expedientes</a>
+                    <a class ="nav-link text-dark" href="{% url 'home' %}">
+                        <i class="bi bi-house-door me-2 text-redactua-primary"></i> Inicio
+                    </a>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a class="nav-link text-dark" href="{% url 'family_case_list' %}"><i class="bi bi-folder2-open me-2 text-redactua-primary"></i> Expedientes</a>
                 </li>
                 <li class="nav-item mb-2">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-people me-2 text-redactua-primary"></i> Usuarios</a>
@@ -54,7 +60,7 @@
                     <a class="nav-link text-dark" href="#"><i class="bi bi-telephone me-2 text-redactua-primary"></i> Contactos</a>
                 </li>
                 <li class="nav-item mb-2">
-                    <a class="nav-link text-dark" href="#"><i class="bi bi-bar-chart me-2 text-redactua-primary"></i> Estadísticas</a>
+                    <a class="nav-link text-dark" href="{% url 'statistics' %}"><i class="bi bi-bar-chart me-2 text-redactua-primary"></i> Estadísticas</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="#"><i class="bi bi-person-badge me-2 text-redactua-primary"></i> Trabajadores</a>
