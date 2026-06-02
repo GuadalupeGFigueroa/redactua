@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .thead-redactua th {
+        background-color: #3A4E40 !important;
+        color: #E7C573 !important;
+        border-color: #3A4E40 !important;
+        border-bottom: 2px solid #3A4E40 !important;
+    }
+</style>
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    
+    <form method="GET" action="{% url 'beneficiary_list' %}" class="d-flex flex-grow-1" style="max-width: 400px;">
+        <div class="input-group shadow-sm">
+            <input type="text" name="q" value="{{ query }}" class="form-control border-dark border-end-0 bg-white" placeholder="Buscar...">
+            {% if query %}
+                <a href="{% url 'beneficiary_list' %}" class="btn border-dark border-start-0 border-end-0 bg-white text-muted"><i class="bi bi-x-lg"></i></a>
+            {% endif %}
+            <button class="btn btn-dark fw-semibold px-4 rounded-end" type="submit">Buscar</button>
+        </div>
+    </form>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="#" class="btn btn-dark fw-semibold px-3">Nuevo</a>
+        <button class="btn btn-dark fw-semibold px-3">Filtrar</button>
+        <button class="btn btn-dark fw-semibold px-3">Agrupar</button>
+        <button class="btn btn-dark fw-semibold px-3">Ordenar</button>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-0 border-top border-0 border-dark">
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered mb-0 align-middle text-center">
+           <thead class="thead-redactua align-middle" style="height: 50px;">
+                <tr>
+                    <th scope="col" style="width: 50px;"></th>
+                    <th scope="col">Nº Expte.</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Apellido 1</th>
+                    <th scope="col">Apellido 2</th>
+                    <th scope="col">Grupo</th>
+                    <th scope="col">Fecha de alta</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Ficha</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                {% for beneficiary in beneficiaries %}
+                <tr>
+                    <td>
+                        <input class="form-check-input border-dark shadow-none" type="checkbox" value="{{ beneficiary.id }}">
+                    </td>
+                    <td class="text-nowrap">{{ beneficiary.family_case.file_number|default:"-" }}</td>
+                    <td class="fw-bold">{{ beneficiary.first_name }}</td>
+                    <td>{{ beneficiary.last_name1 }}</td>
+                    <td>{{ beneficiary.last_name2|default:"-" }}</td>
+                    <td>
+                        {% for group in beneficiary.enrolled_groups.all %}
+                            <span class="badge bg-light text-dark border">{{ group.name }}</span>
+                        {% empty %}
+                            -
+                        {% endfor %}
+                    </td>
+                    <td>{{ beneficiary.start_date|date:"d/m/Y"|default:"-" }}</td>
+                    <td class="fw-bold {% if beneficiary.active %}text-dark{% else %}text-muted{% endif %}">
+                        {% if beneficiary.active %}Activo{% else %}Baja{% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'beneficiary_detail' beneficiary.id %}" class="text-dark text-decoration-underline fw-semibold small">Ver</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="py-5 text-muted">
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                        No se encontraron usuarios en la base de datos.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mt-3 mb-5">
+    <div class="text-dark fw-semibold small">
+        Total registros: {{ beneficiaries|length }}
+    </div>
+    <button class="btn btn-dark fw-semibold px-4 shadow-sm" onclick="alert('Funcionalidad de exportación a Excel pendiente de implementación.')">
+        Exportar
+    </button>
+</div>
+{% endblock %}

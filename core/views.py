@@ -1,7 +1,7 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-from .models import Group, Beneficiary, Attendance, FamilyCase
+from .models import Group, Beneficiary, Attendance, FamilyCase, Worker, ExternalProfessional
 from .forms import FamilyCaseForm, BeneficiaryForm
 from datetime import date
 from django.db.models import Q, Count
@@ -11,12 +11,6 @@ import json
 def home_view(request):
     """Renderiza la plantilla base para comprobar la estructura de navegación"""
     return render(request, 'base.html')
-
-def attendance_view(request):
-    """Muestra la pantalla de asistencia con los grupos y el alumnado correspondiente"""
-    groups = Group.objects.all()
-    from datetime import date
-from django.db.models import Q
 
 def attendance_view(request):
     """Muestra la pantalla de asistencia con los grupos y el alumnado correspondiente"""
@@ -37,7 +31,6 @@ def attendance_view(request):
         group = get_object_or_404(Group, id=selected_group_id)
         students_qs = group.beneficiaries.all()
 
-        # Damos vida al buscador
         if search_query:
             students_qs = students_qs.filter(
                 Q(first_name__icontains=search_query) |
@@ -47,12 +40,17 @@ def attendance_view(request):
         students = students_qs
         registered_count = students.count()
 
-        # Damos vida al recuento real cruzando grupo, fecha y estado "Presente"
-        attended_count = Attendance.objects.filter(
+        saved_attendances = Attendance.objects.filter(
             group_id=selected_group_id,
-            date=selected_date_str,
-            status='PRESENT'
-        ).count()
+            date=selected_date_str
+        )
+        attendance_dict = {att.beneficiary_id: att for att in saved_attendances}
+
+        for student in students:
+            student.current_attendance = attendance_dict.get(student.id)
+            
+        attended_count = saved_attendances.filter(status='PRESENT').count()
+
 
     context = {
         'groups': groups,
@@ -89,43 +87,40 @@ def get_students_by_group(request, group_id):
 
 def update_attendance(request):
     """API interna: Recibe un POST de JavaScript y guarda la asistencia en la base de datos"""
-   
     if request.method == 'POST':
         try:
-            # 1. Desempaquetamos el JSON que nos envvía JavaScript
+            # 1. Desempaquetamos el JSON
             data = json.loads(request.body)
             student_id = data.get('student_id')
             group_id = data.get('group_id')
             date_string = data.get('date') 
-            status_text = data.get('status')
+            db_status = data.get('status') # Ahora recibimos 'PRESENT', 'LATE', etc. directamente
+            incidence_time = data.get('incidence_time') # Atrapamos la hora
 
-            # Validamos que nos han llegado todos los datos que necesitamos
-            if not all([student_id, group_id, date_string, status_text]):
+            # Validamos campos obligatorios
+            if not all([student_id, group_id, date_string, db_status]):
                 return JsonResponse({'success': False,'error': 'Faltan datos'}, status=400)
             
-            # 2. Traducimos el texto del botón al formato de la base de datos
-            status_mapping = {
-                'Asiste' : 'PRESENT',
-                'Retraso' : 'LATE',
-                'Falta' : 'UNJUSTIFIED_ABSENCE',
-            }
-            db_status = status_mapping.get(status_text, 'PRESENT')
+            # Si la hora llega vacía desde el HTML, la convertimos en un nulo válido para la BD
+            if not incidence_time:
+                incidence_time = None
 
-            # 3. Lógica para guardar los datos 
-            # En caso de existir un registro, lo actualiza, sino lo crea.
+            # 2. Guardamos o actualizamos en la base de datos
             Attendance.objects.update_or_create(
                 group_id=group_id,
                 beneficiary_id=student_id,
                 date=date_string,
-                defaults={'status': db_status}
+                defaults={
+                    'status': db_status,
+                    'incidence_time': incidence_time
+                }
             )
             return JsonResponse({'success': True, 'message': 'Asistencia registrada correctamente'})
 
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
         
-    #Medida de seguridad si alguien intenta entrar por URL
-    return JsonResponse({'error': 'Metodo no permitido'}, status=405)       
+    return JsonResponse({'error': 'Metodo no permitido'}, status=405)   
 
 # Gestión de expedientes
 
@@ -202,6 +197,79 @@ def beneficiary_create(request, case_id):
         form = BeneficiaryForm()
         
     return render(request, 'beneficiary_form.html', {'form': form, 'case': case})
+
+# --- DIRECTORIO: USUARIOS (BENEFICIARIOS) ---
+
+def beneficiary_list(request):
+    """Muestra el listado de usuarios/menores con buscador"""
+    query = request.GET.get('q', '')
+    
+    if query:
+        beneficiaries = Beneficiary.objects.filter(
+            Q(first_name__icontains=query) |
+            Q(last_name1__icontains=query) |
+            Q(last_name2__icontains=query) |
+            Q(family_case__file_number__icontains=query) # Permite buscar por nº de expediente
+        ).distinct().order_by('last_name1', 'first_name')
+    else:
+        beneficiaries = Beneficiary.objects.all().order_by('last_name1', 'first_name')
+        
+    return render(request, 'beneficiary_list.html', {'beneficiaries': beneficiaries, 'query': query})
+
+def beneficiary_detail(request, pk):
+    """Muestra la ficha detallada de un usuario/menor"""
+    beneficiary = get_object_or_404(Beneficiary, pk=pk)
+    return render(request, 'beneficiary_detail.html', {'beneficiary': beneficiary})
+
+
+# --- DIRECTORIO: CONTACTOS (PROFESIONALES EXTERNOS) ---
+
+def external_professional_list(request):
+    """Muestra el listado de contactos de otras entidades con buscador"""
+    query = request.GET.get('q', '')
+    
+    if query:
+        professionals = ExternalProfessional.objects.filter(
+            Q(first_name__icontains=query) |
+            Q(last_name1__icontains=query) |
+            Q(last_name2__icontains=query) |
+            Q(category__icontains=query) |
+            Q(work_place__place_name__icontains=query) # Permite buscar por el nombre de la entidad/colegio
+        ).distinct().order_by('work_place__place_name', 'last_name1')
+    else:
+        professionals = ExternalProfessional.objects.all().order_by('work_place__place_name', 'last_name1')
+        
+    return render(request, 'external_professional_list.html', {'professionals': professionals, 'query': query})
+
+def external_professional_detail(request, pk):
+    """Muestra la ficha detallada de un contacto externo"""
+    professional = get_object_or_404(ExternalProfessional, pk=pk)
+    return render(request, 'external_professional_detail.html', {'professional': professional})
+
+
+# --- DIRECTORIO: TRABAJADORES (EQUIPO) ---
+
+def worker_list(request):
+    """Muestra el listado del equipo de trabajadores con buscador"""
+    query = request.GET.get('q', '')
+    
+    if query:
+        # Nota: AbstractUser usa 'last_name' en lugar de 'last_name1'
+        workers = Worker.objects.filter(
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(username__icontains=query) |
+            Q(role_name__icontains=query)
+        ).distinct().order_by('first_name')
+    else:
+        workers = Worker.objects.all().order_by('first_name')
+        
+    return render(request, 'worker_list.html', {'workers': workers, 'query': query})
+
+def worker_detail(request, pk):
+    """Muestra la ficha detallada de un trabajador"""
+    worker = get_object_or_404(Worker, pk=pk)
+    return render(request, 'worker_detail.html', {'worker': worker})
 
 def statistics_view(request):
     """Genera reportes de asistencia filtrados por fecha y alumno"""

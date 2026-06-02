@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="text-redactua-primary fw-bold mb-0">Contactos en Red</h2>
+        <span class="text-muted small">Profesionales externos y centros vinculados</span>
+    </div>
+
+    <form method="GET" action="{% url 'external_professional_list' %}" class="d-flex w-100" style="max-width: 500px;">
+        <div class="input-group shadow-sm">
+            <input type="text" name="q" value="{{ query }}" class="form-control border-dark border-end-0 bg-white" placeholder="Buscar por nombre, categoría o entidad...">
+            {% if query %}
+                <a href="{% url 'external_professional_list' %}" class="btn border-dark border-start-0 bg-white text-muted"><i class="bi bi-x-lg"></i></a>
+            {% endif %}
+            <button class="btn btn-dark fw-semibold px-4" type="submit">Buscar</button>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4">
+    {% for professional in professionals %}
+    <div class="col-12 col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 h-100 rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-1">{{ professional.first_name }} {{ professional.last_name1 }}</h5>
+                <p class="text-redactua-primary fw-semibold small mb-3">{{ professional.category|default:"Sin categoría" }}</p>
+                
+                <div class="small mb-3">
+                    <div class="mb-1"><i class="bi bi-building me-2 text-muted"></i>{{ professional.work_place.place_name|default:"Entidad no especificada" }}</div>
+                    <div class="mb-1"><i class="bi bi-telephone me-2 text-muted"></i>{{ professional.phone_number|default:"-" }}</div>
+                </div>
+                
+                <div class="mt-auto">
+                    <a href="{% url 'external_professional_detail' professional.id %}" class="btn btn-outline-dark btn-sm rounded-pill px-3 w-100 fw-semibold">Ver Contacto</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-light text-center border rounded-4 py-5 shadow-sm">
+            <i class="bi bi-person-lines-fill fs-1 text-muted mb-3 d-block"></i>
+            <h5 class="fw-bold">No se encontraron contactos</h5>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

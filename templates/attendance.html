@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-{% csrf_token %} 
+{% csrf_token %}
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="text-redactua-primary fw-bold mb-0">Asistencia</h2>
@@ -10,45 +10,50 @@
 
 <div class="card shadow-sm border-0 mb-4 bg-white rounded-4">
     <div class="card-body">
-        <div class="input-group mb-3">
-            <input type="text" class="form-control bg-light border-0" placeholder="Buscar por Nº Expte., Nombre...">
-            <button class="btn btn-light border-0" type="button"><i class="bi bi-search"></i></button>
-            <button class="btn btn-light border-0" type="button"><i class="bi bi-sliders"></i></button>
-        </div>
+        
+        <form method="GET" action="{% url 'attendance' %}" id="attendanceForm">
+            <div class="input-group mb-3">
+                <input type="text" name="q" value="{{ search_query }}" class="form-control bg-light border-0" placeholder="Buscar por Nombre, Apellido...">
+                <button class="btn btn-light border-0" type="submit"><i class="bi bi-search"></i></button>
+            </div>
 
-        <div class="row g-2 align-items-center mb-2">
-            <div class="col-auto">
-                <label class="fw-bold me-2">Grupo:</label>
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-auto">
+                    <label class="fw-bold me-2">Grupo:</label>
+                </div>
+                <div class="col">
+                    <select class="form-select bg-light border-0" name="group_id" id="groupSelect" onchange="this.form.submit()">
+                        <option value="">Escoger grupo...</option>
+                        {% for group in groups %}
+                            <option value="{{ group.id }}" {% if selected_group_id == group.id|stringformat:"s" %}selected{% endif %}>
+                                {{ group.name }}
+                            </option>
+                        {% empty %}
+                            <option value="">No hay grupos creados</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            <div class="col">
-                <select class="form-select bg-light border-0" id="groupSelect">
-                    {% for group in groups %}
-                        <option value="{{ group.id }}">{{ group.name }}</option>
-                    {% empty %}
-                        <option value="">No hay grupos creados</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
 
-        <div class="row g-2 align-items-center">
-            <div class="col-auto">
-                <i class="bi bi-calendar3 fs-4 text-dark"></i>
+            <div class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <label class="fw-bold me-2">Fecha:</label>
+                </div>
+                <div class="col">
+                    <input type="date" name="date" class="form-control bg-light border-0" value="{{ selected_date }}" onchange="this.form.submit()">
+                </div>
+                <div class="col-auto">
+                    <span class="badge bg-white text-dark border border-dark py-2 px-3" id="dayBadge">Cargando...</span>
+                </div>
             </div>
-            <div class="col">
-                <input type="date" class="form-control bg-light border-0" value="2026-03-10">
-            </div>
-            <div class="col-auto">
-                <span class="badge bg-white text-dark border border-dark py-2 px-3">martes</span>
-            </div>
-        </div>
+        </form>
 
         <div class="d-flex justify-content-between mt-4 px-2">
             <div class="fs-6">
-                Registrados: <span class="fw-bold">19/20</span>
+                Registrados: <span class="fw-bold">{{ registered_count }}</span>
             </div>
             <div class="fs-6">
-                Asistencia: <span class="fw-bold">15/20</span>
+                Asistencia: <span class="fw-bold">{{ attended_count }}/{{ registered_count }}</span>
             </div>
         </div>
     </div>
@@ -59,181 +64,150 @@
     {% for student in students %}
     <div class="card shadow-sm border-secondary border-opacity-50 rounded-4 mb-3 p-1 bg-white">
         <div class="card-body">
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
+            <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center">
                 
-                <h5 class="fw-bold mb-3 mb-sm-0">{{ student.first_name }} {{ student.last_name1 }} {% if student.last_name2 %}{{ student.last_name2 }}{% endif %}</h5>
+                <h5 class="fw-bold mb-3 mb-lg-0">{{ student.first_name }} {{ student.last_name1 }} {{ student.last_name2|default:"" }}</h5>
                 
                 <div class="d-flex flex-column align-items-end">
-                    <div class="d-flex gap-2 mb-2 w-100 justify-content-end">
-                        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold" data-student-id="{{ student.id }}">Asiste</button>
-                        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold" data-student-id="{{ student.id }}">Retraso</button>
-                        <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold" data-student-id="{{ student.id }}">Falta</button>
+                    
+                    <div class="d-flex gap-2 w-100 justify-content-end action-buttons">
+                        
+                        <button class="btn btn-sm rounded-pill px-3 action-btn 
+                            {% if student.current_attendance.status == 'PRESENT' %}btn-success fw-bold text-white
+                            {% else %}btn-outline-dark fw-semibold{% endif %}" 
+                            data-student-id="{{ student.id }}" data-status="PRESENT">Asiste</button>
+                        
+                        <button class="btn btn-sm rounded-pill px-3 action-btn 
+                            {% if student.current_attendance.status == 'LATE' %}btn-warning fw-bold text-dark
+                            {% else %}btn-outline-dark fw-semibold{% endif %}" 
+                            data-student-id="{{ student.id }}" data-status="LATE">Retraso</button>
+                        
+                        <button class="btn btn-sm rounded-pill px-3 action-btn 
+                            {% if student.current_attendance.status == 'UNJUSTIFIED_ABSENCE' %}btn-danger fw-bold text-white
+                            {% else %}btn-outline-dark fw-semibold{% endif %}" 
+                            data-student-id="{{ student.id }}" data-status="UNJUSTIFIED_ABSENCE">Falta</button>
                     </div>
-                    <div class="form-check form-check-inline m-0">
-                        <input class="form-check-input border-dark" type="checkbox" id="salida{{ student.id }}">
-                        <label class="form-check-label small" for="salida{{ student.id }}">Salida anticipada</label>
+                    
+                    <div class="time-container mt-2 w-100 d-flex justify-content-end {% if student.current_attendance.status != 'LATE' %}d-none{% endif %}" id="time-container-{{ student.id }}">
+                        <input type="time" class="form-control form-control-sm border-dark w-auto" id="time-{{ student.id }}" 
+                        value="{{ student.current_attendance.incidence_time|time:'H:i' }}" placeholder="Hora">
                     </div>
-                </div>
 
+                </div>
             </div>
         </div>
     </div>
     {% empty %}
-    <div class="alert alert-info text-center rounded-4">
-        No hay beneficiarios registrados en este grupo.
+    <div class="alert alert-light text-center border rounded-4 py-4 shadow-sm">
+        <i class="bi bi-person-exclamation fs-2 text-muted mb-2 d-block"></i>
+        {% if selected_group_id %}
+            No hay beneficiarios que coincidan con la búsqueda.
+        {% else %}
+            Seleccione un grupo para comenzar el registro.
+        {% endif %}
     </div>
     {% endfor %}
 
 </div>
 
+{% if selected_group_id %}
+<div class="d-flex justify-content-end gap-2 mt-4 mb-5 border-top pt-4">
+    <a href="{% url 'attendance' %}" class="btn btn-outline-dark rounded-pill px-4 fw-semibold">Nuevo Registro</a>
+    <a href="{% url 'home' %}" class="btn btn-dark rounded-pill px-4 fw-semibold shadow-sm">Hecho</a>
+</div>
+{% endif %}
+
 <script>
-    // 1. Lógica para actualizar el día de la semana según la fecha
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // 1. DÍA DE LA SEMANA INICIAL
     const dateInput = document.querySelector('input[type="date"]');
-    const dayBadge = document.querySelector('.badge');
+    const dayBadge = document.getElementById('dayBadge');
     
-    dateInput.addEventListener('change', (e) => {
-        const date = new Date(e.target.value);
-        const options = { weekday: 'long' };
-        let dayName = new Intl.DateTimeFormat('es-ES', options).format(date);
-        dayBadge.textContent = dayName;
-    
-    if (dayBadge){
-        dayBadge.textContent = dayName;
+    function updateDayBadge() {
+        if(dateInput.value) {
+            const dateObj = new Date(dateInput.value);
+            const options = { weekday: 'long' };
+            dayBadge.textContent = new Intl.DateTimeFormat('es-ES', options).format(dateObj);
+        }
     }
-    
-    e.target.form.submit(); // Recargamos la página
-    });
+    updateDayBadge(); // Lo ejecutamos al cargar la página
 
-    // 2. Lógica para mostrar/ocultar horas
- 
-    document.querySelectorAll('.form-check-input').forEach(checkbox => {
-        checkbox.addEventListener('change', (e) => {
-            if(e.target.checked) {
-                console.log("Mostrar selector de hora...");
-            }
-        });
-    });
-
-   // 3. Lógica de botones (Asiste/Retraso/Falta) a través de eventos.
-   const studentsListContainer = document.getElementById('studentsList');
-
-   studentsListContainer.addEventListener('click', function(e) {
-    // Comprobamos si el elemento sobre el que se ha hecho click es uno de los botones.
-        if (e.target.tagName === 'BUTTON' && e.target.classList.contains('btn')) {
-            const btn = e.target;
-            const parent = btn.parentElement; // Obtenemos el padre del botón pulsado.
+    // 2. MOSTRAR CAJA DE HORA EN RETRASOS O SALIDAS
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const container = btn.closest('.card-body');
+            const studentId = btn.getAttribute('data-student-id');
+            const status = btn.getAttribute('data-status');
+            const timeContainer = document.getElementById(`time-container-${studentId}`);
             
-            // 1. Limpiamos todos los botones de esa fila dejándolos en gris (outline)
-            parent.querySelectorAll('.btn').forEach(b => {
-                b.classList.remove('btn-success', 'btn-warning', 'btn-danger', 'text-white', 'text-dark','fw-bold');
+            // Colorear botones
+            container.querySelectorAll('.action-btn').forEach(b => {
+                b.classList.remove('btn-success', 'btn-warning', 'btn-danger', 'text-white', 'text-dark', 'fw-bold');
                 b.classList.add('btn-outline-dark');
             });
-            
-            // 2. Quitamos el gris al botón pulsado.
             btn.classList.remove('btn-outline-dark');
-
-            // 3. Aplicamos el color correcto según el texto (estilo semáforo)
-            const text = btn.innerText.trim(); // Aplicamos trim() para eliminar espacios en blanco.
-            if(text === 'Asiste') {
-                btn.classList.add('btn-success', 'fw-bold', 'text-white');
-            } else if (text === 'Retraso') {
-                btn.classList.add('btn-warning', 'fw-bold', 'text-dark');
-            } else if (text === 'Falta') {
-                btn.classList.add('btn-danger', 'fw-bold', 'text-white');
-            }
-
-    // Gestionamos que se envíen los datos al servidor
-            // 1. Recolectamos los datos
-            const studentId = btn.getAttribute('data-student-id');
-            const groupId = document.getElementById('groupSelect').value;
-            const selectedDate = document.querySelector('input[type="date"]').value;
             
-            // 2. Buscamos el token de seguridad
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            if(status === 'PRESENT') btn.classList.add('btn-success', 'fw-bold', 'text-white');
+            if(status === 'LATE') btn.classList.add('btn-warning', 'fw-bold', 'text-dark');
+            if(status === 'UNJUSTIFIED_ABSENCE') btn.classList.add('btn-danger', 'fw-bold', 'text-white');
 
-            // 3. Enviamos el paquete a Django
-            fetch('/api/attendance/update/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken // Enviamos el token de seguridad
-                },
-                body: JSON.stringify({
-                    student_id: studentId,
-                    group_id: groupId,
-                    date: selectedDate,
-                    status: text // Enviamos el texto del botón
-                })
-            })
-            .then(response => response.json())
-
-            // 4. Tratamos la respuesta del servidor
-            .then(data => {
-                if (!data.success) {
-                    console.error("Error del servidor al guardar:", data.error);
-                } else {
-                    console.log("Datos guardados correctamente", data.message); // Verificar la respuesta del servidor
-                }
-            })
-            .catch(error => console.error("Error de comunicación con el servidor:", error));
+            // Mostrar reloj solo si es retraso
+            if(status === 'LATE') {
+                timeContainer.classList.remove('d-none');
+            } else {
+                timeContainer.classList.add('d-none');
+            }
             
-            }
-        });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const groupSelect = document.getElementById('groupSelect');
-        const studentsList = document.getElementById('studentsList');
-
-        groupSelect.addEventListener('change', function() {
-            const groupId = this.value;
-
-            if (!groupId) {
-                studentsList.innerHTML = '<div class="alert alert-info text-center rounded-4">Seleccione un grupo para ver los alumnos.</div>';
-                return;
-            }
-
-            fetch(`/api/group/${groupId}/students/`)
-                .then(response => response.json())
-                .then(data => {
-                    studentsList.innerHTML = ''; 
-
-                    if (data.students.length === 0) {
-                        studentsList.innerHTML = '<div class="alert alert-info text-center rounded-4">No hay beneficiarios registrados en este grupo.</div>';
-                        return;
-                    }
-
-                    // Pintamos las tarjetas con tu diseño exacto de Bootstrap
-                    data.students.forEach(student => {
-                        const card = `
-                        <div class="card shadow-sm border-secondary border-opacity-50 rounded-4 mb-3 p-1 bg-white">
-                            <div class="card-body">
-                                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center">
-                                    
-                                    <h5 class="fw-bold mb-3 mb-sm-0">${student.full_name}</h5>
-                                    
-                                    <div class="d-flex flex-column align-items-end">
-                                        <div class="d-flex gap-2 mb-2 w-100 justify-content-end">
-                                            <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold" data-student-id="${student.id}">Asiste</button>
-                                            <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold" data-student-id="${student.id}">Retraso</button>
-                                            <button class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold" data-student-id="${student.id}">Falta</button>
-                                        </div>
-                                        <div class="form-check form-check-inline m-0">
-                                            <input class="form-check-input border-dark" type="checkbox" id="salida${student.id}">
-                                            <label class="form-check-label small" for="salida${student.id}">Salida anticipada</label>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                        `;
-                        studentsList.insertAdjacentHTML('beforeend', card);
-                    });
-                })
-                .catch(error => console.error('Error en la llamada Fetch:', error));
+            sendData(studentId, status);
         });
     });
+
+    // 3. ENVÍO DE DATOS A DJANGO
+    function sendData(studentId, status) {
+        const groupId = document.getElementById('groupSelect').value;
+        const selectedDate = document.querySelector('input[type="date"]').value;
+        const incidenceTime = document.getElementById(`time-${studentId}`).value;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+        // Solo enviamos si tenemos grupo y fecha (Evita errores)
+        if(!groupId || !selectedDate) return;
+
+        fetch('/api/attendance/update/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                student_id: studentId,
+                group_id: groupId,
+                date: selectedDate,
+                status: status,
+                incidence_time: incidenceTime // Enviamos la hora si existe
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Servidor:", data);
+        })
+        .catch(error => console.error("Error Fetch:", error));
+    }
+    
+    // Si el usuario escribe una hora, que la envíe también al salir de la caja
+    document.querySelectorAll('input[type="time"]').forEach(timeInput => {
+        timeInput.addEventListener('change', function() {
+            const studentId = timeInput.id.split('-')[1];
+            // Buscamos cuál es el botón que estaba marcado
+            const container = timeInput.closest('.card-body');
+            let activeStatus = 'PRESENT'; // Por defecto
+            
+            if(container.querySelector('.btn-warning')) activeStatus = 'LATE';
+            
+            sendData(studentId, activeStatus);
+        });
+    });
+
+});
 </script>
 {% endblock %}
