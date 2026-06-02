@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <form method="GET" action="{% url 'group_list' %}" class="d-flex flex-grow-1" style="max-width: 400px;">
+        <div class="input-group shadow-sm">
+            <input type="text" name="q" value="{{ query }}" class="form-control border-dark border-end-0 bg-white" placeholder="Buscar actividad o grupo...">
+            <button class="btn btn-dark fw-semibold px-4 rounded-end" type="submit">Buscar</button>
+        </div>
+    </form>
+</div>
+
+<div class="table-responsive shadow-sm">
+    <table class="table table-hover table-bordered mb-0 align-middle text-center">
+        <thead class="align-middle" style="background-color: #3A4E40; color: #E7C573; border-color: #3A4E40; height: 50px;">
+            <tr>
+                <th scope="col">Actividad formativa</th>
+                <th scope="col">Grupo</th>
+                <th scope="col">Horario</th>
+                <th scope="col">Profesional asignado</th>
+                <th scope="col">Inscritos</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white">
+            {% for group in groups %}
+            <tr>
+                <td class="fw-bold">{{ group.training_action.name }}</td>
+                <td>{{ group.name }}</td>
+                <td>{{ group.training_action.start_time|time:"H:i" }} - {{ group.training_action.stop_time|time:"H:i" }}</td>
+                <td>{{ group.training_action.worker.first_name|default:"Sin asignar" }} {{ group.training_action.worker.last_name|default:"" }}</td>
+                <td>
+                    <span class="badge {% if group.num_enrolled > 0 %}bg-success{% else %}bg-secondary{% endif %} rounded-pill fs-6">
+                        {{ group.num_enrolled }}
+                    </span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="py-5 text-muted">No hay actividades registradas.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'worker_list' %}" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Volver al equipo
+        </a>
+        <h2 class="text-redactua-primary fw-bold mb-0 mt-2">
+            {{ worker.first_name }} {{ worker.last_name }}
+        </h2>
+        <span class="badge {% if worker.active %}bg-success{% else %}bg-secondary{% endif %} mt-2">
+            {% if worker.active %}En activo{% else %}Inactivo{% endif %}
+        </span>
+        <span class="badge text-dark ms-1" style="background-color: #E7C573;">{{ worker.role_name|default:"Técnico/a" }}</span>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-dark fw-semibold" onclick="alert('La gestión de usuarios de sistema se realiza desde el panel de administración')">
+            <i class="bi bi-shield-lock me-1"></i> Accesos
+        </button>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-12 col-lg-7">
+        <div class="card shadow-sm border-0 rounded-4 h-100" style="border-top: 4px solid #3A4E40 !important;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4" style="color: #3A4E40;"><i class="bi bi-info-circle me-2"></i>Información corporativa</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-bold">Nombre de usuario</label>
+                        <p class="fs-6 font-monospace">{{ worker.username }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-bold">Fecha de alta</label>
+                        <p class="fs-6">{{ worker.start_date|date:"d/m/Y"|default:"-" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-bold">Teléfono corporativo</label>
+                        <p class="fs-6">{{ worker.phone_number|default:"No asignado" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-bold">Correo electrónico</label>
+                        <p class="fs-6">{{ worker.email|default:"No asignado" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">Acciones formativas a su cargo</h6>
+                <div class="list-group list-group-flush">
+                    {% for action in worker.training_actions.all %}
+                        <div class="list-group-item px-0 border-light d-flex align-items-center">
+                            <i class="bi bi-calendar2-check text-muted me-3"></i>
+                            <div>
+                                <p class="mb-0 fw-semibold">{{ action.name }}</p>
+                                <small class="text-muted">{{ action.start_time|time:"H:i" }} - {{ action.stop_time|time:"H:i" }}</small>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="small text-muted mb-0">No tiene ninguna acción formativa (grupos) asignada actualmente.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -24,10 +24,39 @@
     </form>
 
     <div class="d-flex gap-2 flex-wrap">
-        <a href="#" class="btn btn-dark fw-semibold px-3">Nuevo</a>
-        <button class="btn btn-dark fw-semibold px-3">Filtrar</button>
-        <button class="btn btn-dark fw-semibold px-3">Agrupar</button>
-        <button class="btn btn-dark fw-semibold px-3">Ordenar</button>
+        
+        <div class="dropdown">
+            <button class="btn btn-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Filtrar
+            </button>
+            <ul class="dropdown-menu shadow-sm border-0">
+                <li><a class="dropdown-item {% if current_status == 'all' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&sort={{ current_sort }}&status=all">Todos</a></li>
+                <li><a class="dropdown-item {% if current_status == 'active' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&sort={{ current_sort }}&status=active">Solo activos</a></li>
+                <li><a class="dropdown-item {% if current_status == 'inactive' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&sort={{ current_sort }}&status=inactive">Solo bajas</a></li>
+            </ul>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn btn-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Agrupar
+            </button>
+            <ul class="dropdown-menu shadow-sm border-0">
+                <li><a class="dropdown-item {% if current_sort == 'expediente' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&status={{ current_status }}&sort=expediente">Por expediente</a></li>
+            </ul>
+        </div>
+
+        <div class="dropdown">
+            <button class="btn btn-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                Ordenar
+            </button>
+            <ul class="dropdown-menu shadow-sm border-0">
+                <li><a class="dropdown-item {% if current_sort == 'last_name1' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&status={{ current_status }}&sort=last_name1">A-Z (apellidos)</a></li>
+                <li><a class="dropdown-item {% if current_sort == 'name_desc' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&status={{ current_status }}&sort=name_desc">Z-A (apellidos)</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item {% if current_sort == 'date_desc' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&status={{ current_status }}&sort=date_desc">Más recientes primero</a></li>
+                <li><a class="dropdown-item {% if current_sort == 'date_asc' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&status={{ current_status }}&sort=date_asc">Más antiguos primero</a></li>
+            </ul>
+        </div>
     </div>
 </div>
 

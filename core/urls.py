@@ -1,6 +1,7 @@
 # core/urls.py
 from django.urls import path
 from . import views
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     # Ruta a inicio
@@ -24,6 +25,9 @@ urlpatterns = [
     path('equipo/', views.worker_list, name='worker_list'),
     path('equipo/<int:pk>/', views.worker_detail, name='worker_detail'),
 
+    # Ruta para actividades
+    path('actividades/', views.group_list, name='group_list'),
+
     # Rutas para asistencia 
     path('asistencia/', views.attendance_view, name='attendance'),
 
@@ -33,4 +37,7 @@ urlpatterns = [
     # --- RUTAS DE API INTERNA ---
     path('api/group/<int:group_id>/students/', views.get_students_by_group, name='api_group_students'),
     path('api/attendance/update/', views.update_attendance, name='api_update_attendance'),
+
+    # Ruta para el cierre de sesión nativo de Django
+    path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
 ]

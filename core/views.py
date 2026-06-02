@@ -203,18 +203,45 @@ def beneficiary_create(request, case_id):
 def beneficiary_list(request):
     """Muestra el listado de usuarios/menores con buscador"""
     query = request.GET.get('q', '')
+    sort_by = request.GET.get('sort', 'last_name1')
+    filter_status = request.GET.get('status', 'all')
+
+    beneficiaries = Beneficiary.objects.all()
+
+    #  Búsqueda textual
     
     if query:
         beneficiaries = Beneficiary.objects.filter(
             Q(first_name__icontains=query) |
             Q(last_name1__icontains=query) |
             Q(last_name2__icontains=query) |
-            Q(family_case__file_number__icontains=query) # Permite buscar por nº de expediente
-        ).distinct().order_by('last_name1', 'first_name')
+            Q(family_case__file_number__icontains=query)
+        ).distinct()
+    
+    # Filtrar por estado (Activo o baja)
+    if filter_status == 'active':
+        beneficiaries = beneficiaries.filter(active=True)
+    elif filter_status == 'inactive':
+        beneficiaries = beneficiaries.filter(active=False)
+
+    # Ordenar y agrupar
+    if sort_by == 'name_desc':
+        beneficiaries = beneficiaries.order_by('-first_name', '-last_name1', '-last_name2')
+    elif sort_by == 'date_desc':
+        beneficiaries = beneficiaries.order_by('-start_date')
+    elif sort_by == 'date_asc':
+        beneficiaries = beneficiaries.order_by('start_date')
+    elif sort_by == 'expediente':
+        beneficiaries = beneficiaries.order_by('family_case__file_number', 'last_name1')
     else:
-        beneficiaries = Beneficiary.objects.all().order_by('last_name1', 'first_name')
-        
-    return render(request, 'beneficiary_list.html', {'beneficiaries': beneficiaries, 'query': query})
+        beneficiaries = beneficiaries.order_by('last_name1', 'last_name2', 'first_name')
+
+    return render(request, 'beneficiary_list.html', {
+        'beneficiaries': beneficiaries, 
+        'query': query, 
+        'current_by': sort_by, 
+        'current_status': filter_status,
+    })
 
 def beneficiary_detail(request, pk):
     """Muestra la ficha detallada de un usuario/menor"""
@@ -304,7 +331,6 @@ def statistics_view(request):
 
     #  Lista de menores para el desplegable
     students = Beneficiary.objects.filter(is_tutor=False).order_by('first_name', 'last_name1')
-
     
     context = {
         'stats': stats,
@@ -314,5 +340,21 @@ def statistics_view(request):
         'current_end': end_date,
         'current_student': student_id,
     }
-    
     return render(request, 'statistics.html', context)
+
+def group_list(request):
+    """Muestra el listado de actividades y grupos activos"""
+    query = request.GET.get('q', '')
+    
+    # Traemos los grupos y contamos cuántos beneficiarios tiene cada uno
+    groups = Group.objects.select_related('training_action', 'training_action__worker').annotate(
+        num_enrolled=Count('beneficiaries')
+    ).order_by('training_action__start_date', 'name')
+    
+    if query:
+        groups = groups.filter(
+            Q(name__icontains=query) |
+            Q(training_action__name__icontains=query)
+        )
+        
+    return render(request, 'group_list.html', {'groups': groups, 'query': query})

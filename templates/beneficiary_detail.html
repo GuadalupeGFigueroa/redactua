@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'beneficiary_list' %}" class="text-decoration-none text-muted small">
+            <i class="bi bi-arrow-left me-1"></i> Volver al directorio
+        </a>
+        <h2 class="text-redactua-primary fw-bold mb-0 mt-2">
+            {{ beneficiary.first_name }} {{ beneficiary.last_name1 }} {{ beneficiary.last_name2|default:"" }}
+        </h2>
+        <span class="badge {% if beneficiary.active %}bg-success{% else %}bg-secondary{% endif %} mt-2">
+            {% if beneficiary.active %}Activo{% else %}Baja{% endif %}
+        </span>
+        {% if beneficiary.is_tutor %}
+            <span class="badge bg-dark mt-2 ms-1">Tutor/a Legal</span>
+        {% else %}
+            <span class="badge" style="background-color: #E7C573; color: #1A1A1A;">Menor</span>
+        {% endif %}
+    </div>
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-dark fw-semibold" onclick="alert('Función de edición en desarrollo')">
+            <i class="bi bi-pencil me-1"></i> Editar
+        </button>
+        <button class="btn text-white fw-semibold" style="background-color: #C0392B;" onclick="alert('Función de borrado en desarrollo')">
+            <i class="bi bi-trash me-1"></i> Eliminar
+        </button>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-12 col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4 h-100" style="border-top: 4px solid #3A4E40 !important;">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4" style="color: #3A4E40;"><i class="bi bi-person-vcard me-2"></i>Datos personales</h5>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-bold">Fecha de Nacimiento</label>
+                        <p class="fs-6">{{ beneficiary.birth_date|date:"d/m/Y"|default:"No especificada" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-bold">Nacionalidad</label>
+                        <p class="fs-6">{{ beneficiary.nationality|default:"-" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-bold">Teléfono</label>
+                        <p class="fs-6">{{ beneficiary.phone_number|default:"No registrado" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="text-muted small text-uppercase fw-bold">Email</label>
+                        <p class="fs-6">{{ beneficiary.email|default:"No registrado" }}</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold">Dirección</label>
+                        <p class="fs-6 mb-0">{{ beneficiary.address|default:"No registrada" }} {% if beneficiary.postal_code %}(CP: {{ beneficiary.postal_code }}){% endif %}</p>
+                    </div>
+                </div>
+
+                <hr class="my-4 text-muted">
+
+                <h5 class="fw-bold mb-3" style="color: #3A4E40;"><i class="bi bi-journal-text me-2"></i>Notas y observaciones</h5>
+                <div class="bg-light p-3 rounded-3 border">
+                    {% if beneficiary.notes %}
+                        <p class="mb-0 text-break">{{ beneficiary.notes|linebreaksbr }}</p>
+                    {% else %}
+                        <p class="mb-0 text-muted fst-italic">No hay notas adicionales registradas en esta ficha.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        
+        <div class="card shadow-sm border-0 rounded-4 mb-4" style="background-color: #F4F5F6;">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">Unidad familiar</h6>
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-folder2-open fs-3 me-3" style="color: #3A4E40;"></i>
+                    <div>
+                        <div class="fw-bold fs-5">{{ beneficiary.family_case.file_number }}</div>
+                        <div class="small text-muted">Alta: {{ beneficiary.family_case.creation_date|date:"d/m/Y" }}</div>
+                    </div>
+                </div>
+                <a href="{% url 'family_case_detail' beneficiary.family_case.id %}" class="btn btn-sm w-100 fw-semibold text-white" style="background-color: #3A4E40;">
+                    Ver expediente completo
+                </a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">Grupos matriculados</h6>
+                {% for group in beneficiary.enrolled_groups.all %}
+                    <span class="badge border border-dark text-dark px-3 py-2 me-1 mb-2 fs-6 fw-normal bg-light">{{ group.name }}</span>
+                {% empty %}
+                    <p class="small text-muted mb-0">No está asignado a ningún grupo.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h6 class="fw-bold text-uppercase small text-muted mb-3">Centro escolar</h6>
+                <p class="fw-semibold mb-0">
+                    <i class="bi bi-building me-2 text-muted"></i>
+                    {{ beneficiary.school.place_name|default:"No asignado" }}
+                </p>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
