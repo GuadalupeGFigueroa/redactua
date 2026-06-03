@@ -1,98 +1,165 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="text-redactua-primary fw-bold mb-0">Añadir miembro</h2>
-        <span class="text-muted small">Vinculando al expediente {{ case.file_number }}</span>
-    </div>
+<div class="mb-4">
+    <a href="{% url 'family_case_detail' case.id %}" class="text-decoration-none text-muted small">
+        <i class="bi bi-arrow-left me-1"></i> Volver al expediente
+    </a>
+    <h2 class="text-redactua-primary fw-bold mb-0 mt-2">Añadir miembro al expediente {{ case.file_number }}</h2>
 </div>
 
-<div class="row">
-    <div class="col-12 col-lg-8">
-        <div class="card shadow-sm border-0 bg-white rounded-4">
-            <div class="card-body p-4">
+<div class="card shadow-sm border-0 rounded-4" style="border-top: 4px solid #3A4E40 !important;">
+    <div class="card-body p-4 p-md-5">
+        <form method="POST">
+            {% csrf_token %}
+
+            <h5 class="fw-bold mb-4" style="color: #3A4E40;"><i class="bi bi-person-badge me-2"></i>Datos personales</h5>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-12 col-md-4">
+                    <div class="form-check form-switch fs-5 mt-md-4">
+                        {{ form.is_tutor }}
+                        <label class="form-check-label fw-bold ms-2" for="{{ form.is_tutor.id_for_label }}">Es tutor/a legal</label>
+                    </div>
+                </div>
+                <div class="col-12 col-md-8">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Rol familiar</label>
+                    {{ form.family_role }}
+                </div>
                 
-                <form method="POST">
-                    {% csrf_token %}
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Nombre *</label>
+                    {{ form.first_name }}
+                    <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Primer apellido *</label>
+                    {{ form.last_name1 }}
+                    <div class="text-danger small mt-1">{{ form.last_name1.errors }}</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Segundo apellido</label>
+                    {{ form.last_name2 }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Fecha de nacimiento</label>
+                    {{ form.birth_date }}
+                    <div class="text-danger small mt-1">{{ form.birth_date.errors }}</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Nacionalidad</label>
+                    {{ form.nationality }}
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-4" style="color: #3A4E40;"><i class="bi bi-geo-alt me-2"></i>Contacto y localización</h5>
+            
+            <div class="row g-4 mb-5">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Teléfono</label>
+                    {{ form.phone_number }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Correo electrónico</label>
+                    {{ form.email }}
+                    <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                </div>
+                <div class="col-md-9">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Dirección</label>
+                    {{ form.address }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Código postal</label>
+                    {{ form.postal_code }}
+                </div>
+            </div>
+
+            <div id="socioeducativo-section">
+                <h5 class="fw-bold mb-4" style="color: #3A4E40;"><i class="bi bi-backpack me-2"></i>Datos socioeducativos</h5>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Centro escolar</label>
+                        {{ form.school }}
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center">
+                        <div class="form-check mt-md-4">
+                            {{ form.derivation }}
+                            <label class="form-check-label fw-semibold ms-2" for="{{ form.derivation.id_for_label }}">Viene derivado de otra entidad o servicio</label>
+                        </div>
+                    </div>
                     
-                    <div class="row g-3">
-                        {% for field in form %}
-                            <div class="col-md-6 mb-3" id="container-{{ field.name }}">
-                                
-                                {% if field.name == 'is_tutor' or field.name == 'derivation' %}
-                                    <div class="form-check form-switch fs-5 mt-4">
-                                        {{ field }}
-                                        <label class="form-check-label fw-bold ms-2 text-dark" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="col-12">
+                        <label class="form-label fw-bold small text-muted text-uppercase">Matriculación en grupos</label>
+                        <div class="bg-light p-3 rounded-3 border">
+                            <div class="d-flex flex-wrap gap-3">
+                                {% for checkbox in form.groups %}
+                                    <div class="form-check">
+                                        {{ checkbox.tag }}
+                                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                                            {{ checkbox.choice_label }}
+                                        </label>
                                     </div>
-                                    
-                                {% elif field.name == 'groups' %}
-                                    <label class="fw-bold mb-2 text-dark small text-uppercase">{{ field.label }}</label>
-                                    <div class="bg-light p-3 rounded form-control border-0" style="max-height: 180px; overflow-y: auto;">
-                                        {{ field }}
-                                    </div>
-                                    
-                                {% else %}
-                                    <label class="fw-bold mb-2 text-dark small text-uppercase">{{ field.label }}</label>
-                                    {{ field }}
-                                {% endif %}
-                                
-                                {% for error in field.errors %}
-                                    <div class="text-danger small mt-1 fw-bold">{{ error }}</div>
                                 {% endfor %}
                             </div>
-                        {% endfor %}
+                        </div>
+                        <div class="form-text small">Puedes seleccionar varios grupos simultáneamente.</div>
                     </div>
-
-                    <div class="d-flex justify-content-end gap-2 mt-4 border-top pt-4">
-                        <a href="{% url 'family_case_detail' case.id %}" class="btn btn-outline-dark rounded-pill px-4 fw-semibold">Cancelar</a>
-                        <button type="submit" class="btn btn-dark rounded-pill px-4 fw-semibold shadow-sm">
-                            Guardar miembro
-                        </button>
-                    </div>
-                </form>
-
+                </div>
             </div>
-        </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <label class="form-label fw-bold small text-muted text-uppercase">Notas y observaciones</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+
+            <div class="text-end border-top pt-4 mt-5">
+                <a href="{% url 'family_case_detail' case.id %}" class="btn btn-light border me-2 fw-semibold px-4">Cancelar</a>
+                <button type="submit" class="btn text-white fw-semibold px-5" style="background-color: #3A4E40;">Guardar</button>
+            </div>
+            
+        </form>
     </div>
 </div>
+
+<style>
+    .form-check-input { border-color: #3A4E40; }
+    .form-check-input:checked { background-color: #3A4E40; border-color: #3A4E40; }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const tutorSwitch = document.getElementById('id_is_tutor'); 
-    
-    // Usamos el ID exacto que genera el bucle HTML
-    const schoolContainer = document.getElementById('container-school');
-    const groupsContainer = document.getElementById('container-groups');
-    
+    const socioSection = document.getElementById('socioeducativo-section');
     const schoolInput = document.getElementById('id_school');
 
     function toggleFields() {
-        // Validación de seguridad para asegurar que los elementos existen en el DOM
-        if (!tutorSwitch || !schoolContainer || !groupsContainer) return;
+        if (!tutorSwitch || !socioSection) return;
 
         if (tutorSwitch.checked) {
-            // Es un adulto: Escondemos centro escolar y grupos
-            schoolContainer.style.display = 'none';
-            groupsContainer.style.display = 'none';
+            // Es adulto: Escondemos toda la sección socioeducativa
+            socioSection.style.display = 'none';
             
             // Vaciamos el centro escolar
             if(schoolInput) schoolInput.value = ''; 
             
-            // Desmarcamos todos los grupos que pudieran estar seleccionados
+            // Desmarcamos todos los grupos
             document.querySelectorAll('input[name="groups"]').forEach(checkbox => {
                 checkbox.checked = false;
             });
+            // Desmarcamos la derivación
+            const derivationInput = document.getElementById('id_derivation');
+            if (derivationInput) derivationInput.checked = false;
             
         } else {
-            // Es un menor: Mostramos colegio y grupos
-            schoolContainer.style.display = 'block';
-            groupsContainer.style.display = 'block';
+            // Es menor: Mostramos la sección
+            socioSection.style.display = 'block';
         }
     }
 
-    // Ejecutamos al inicio y enganchamos el evento
     toggleFields();
     if(tutorSwitch) {
         tutorSwitch.addEventListener('change', toggleFields);

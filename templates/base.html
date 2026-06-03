@@ -62,7 +62,7 @@
                     </a>
                 </li>
 
-                {% if perms.core.view.family_case %}
+                {% if perms.core.view_familycase %}
                 <li class="nav-item mb-2">
                     <a class="nav-link text-dark" href="{% url 'family_case_list' %}">
                         <i class="bi bi-folder2-open me-2 text-redactua-primary"></i> Expedientes
@@ -70,7 +70,7 @@
                 </li>
                 {% endif %}
 
-                {% if perms.core.view.beneficiary %}
+                {% if perms.core.view_beneficiary %}
                 <li class="nav-item mb-2">
                     <a class="nav-link text-dark" href="{% url 'beneficiary_list' %}">
                         <i class="bi bi-people me-2 text-redactua-primary"></i> Usuarios

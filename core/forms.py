@@ -33,7 +33,7 @@ class BeneficiaryForm(forms.ModelForm):
 
         widgets = {
             'is_tutor': forms.CheckboxInput(attrs={'class': 'form-check-input', 'role': 'switch'}),
-            'family_role': forms.TextInput(attrs={'class': 'form-select bg-light', 'placeholder': 'Ejemplo: Padre, Madre, Abuela, etc.'}),
+            'family_role': forms.TextInput(attrs={'class': 'form-control bg-light', 'placeholder': 'Ejemplo: Padre, Madre, Abuela, etc.'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control bg-light'}),
             'last_name1': forms.TextInput(attrs={'class': 'form-control bg-light'}),
             'last_name2': forms.TextInput(attrs={'class': 'form-control bg-light'}),

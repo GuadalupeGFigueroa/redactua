@@ -1,46 +1,47 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-redactua-primary fw-bold mb-0">Alta de Expediente</h2>
+<div class="mb-4">
+    <a href="{% url 'family_case_list' %}" class="text-decoration-none text-muted small">
+        <i class="bi bi-arrow-left me-1"></i> Volver a expedientes
+    </a>
+    <h2 class="text-redactua-primary fw-bold mb-0 mt-2">Nuevo expediente familiar</h2>
 </div>
 
-<div class="row">
-    <div class="col-12 col-lg-8">
-        <div class="card shadow-sm border-0 bg-white rounded-4">
-            <div class="card-body p-4">
+<div class="card shadow-sm border-0 rounded-4" style="border-top: 4px solid #3A4E40 !important;">
+    <div class="card-body p-4 p-md-5">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="row g-4">
                 
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    {% for field in form %}
-                        <div class="mb-4">
-                            <label class="fw-bold mb-2 text-dark">{{ field.label }}</label>
-                            {{ field }}
-                            
-                            {% if field.help_text %}
-                                <div class="form-text small text-muted mt-1">
-                                    <i class="bi bi-info-circle me-1"></i>{{ field.help_text }}
-                                </div>
-                            {% endif %}
-                            
-                            {% for error in field.errors %}
-                                <div class="text-danger small mt-1 fw-bold">{{ error }}</div>
-                            {% endfor %}
-                        </div>
-                    {% endfor %}
+                <div class="col-md-6">
+                    <label for="{{ form.file_number.id_for_label }}" class="form-label fw-bold small text-muted text-uppercase">Nº de expediente</label>
+                    {{ form.file_number }}
+                    {% if form.file_number.help_text %}
+                        <div class="form-text small"><i class="bi bi-info-circle me-1"></i>{{ form.file_number.help_text }}</div>
+                    {% endif %}
+                    <div class="text-danger small mt-1">{{ form.file_number.errors }}</div>
+                </div>
 
-                    <div class="d-flex justify-content-end gap-2 mt-5 border-top pt-4">
-                        <a href="{% url 'family_case_list' %}" class="btn btn-outline-dark rounded-pill px-4 fw-semibold">Cancelar</a>
-                        <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold text-white">
-                            Guardar Expediente
-                        </button>
-                    </div>
-                </form>
+                <div class="col-md-6">
+                    <label for="{{ form.external_professional.id_for_label }}" class="form-label fw-bold small text-muted text-uppercase">Profesional externo de referencia</label>
+                    {{ form.external_professional }}
+                    <div class="text-danger small mt-1">{{ form.external_professional.errors }}</div>
+                </div>
+
+                <div class="col-12">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label fw-bold small text-muted text-uppercase">Observaciones iniciales</label>
+                    {{ form.notes }}
+                    <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
+                </div>
+
+                <div class="col-12 mt-5 text-end border-top pt-4">
+                    <a href="{% url 'family_case_list' %}" class="btn btn-light border me-2 fw-semibold px-4">Cancelar</a>
+                    <button type="submit" class="btn text-white fw-semibold px-5" style="background-color: #3A4E40;">Guardar expediente</button>
+                </div>
 
             </div>
-        </div>
+        </form>
     </div>
 </div>
 {% endblock %}
