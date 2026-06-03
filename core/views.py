@@ -1,24 +1,26 @@
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import Q, Count
 from .models import Group, Beneficiary, Attendance, FamilyCase, Worker, ExternalProfessional
 from .forms import FamilyCaseForm, BeneficiaryForm
 from datetime import date
-from django.db.models import Q, Count
 import json
 
-
+@login_required
 def home_view(request):
     """Renderiza la plantilla base para comprobar la estructura de navegación"""
     return render(request, 'base.html')
 
+@login_required
 def attendance_view(request):
     """Muestra la pantalla de asistencia con los grupos y el alumnado correspondiente"""
     groups = Group.objects.all()
     
     # 1. Atrapamos lo que el usuario envía por la URL o ponemos valores por defecto
     selected_group_id = request.GET.get('group_id', '')
-    # Por defecto, ponemos la fecha de hoy
+    # Por defecto se pone la fecha de hoy
     selected_date_str = request.GET.get('date', date.today().strftime('%Y-%m-%d'))
     search_query = request.GET.get('q', '')
 
@@ -63,6 +65,7 @@ def attendance_view(request):
     }
     return render(request, 'attendance.html', context)
 
+@login_required
 def get_students_by_group(request, group_id):
     """API interna: DEvuelve los alumnos de un grupo específico en formato JSON"""
     try:
@@ -85,6 +88,7 @@ def get_students_by_group(request, group_id):
             # En caso de que no se encuentre el grupo, devolvemos un mensaje de error
         return JsonResponse({'error': 'Grupo no encontrado'}, status=404)
 
+@login_required
 def update_attendance(request):
     """API interna: Recibe un POST de JavaScript y guarda la asistencia en la base de datos"""
     if request.method == 'POST':
@@ -124,6 +128,8 @@ def update_attendance(request):
 
 # Gestión de expedientes
 
+@login_required
+@permission_required('core.view_familycase', raise_exception=True) #Restringimos accesos a solo lectura para ciertos roles
 def family_case_list(request):
     """Muestra la lista los expedientes familiares con un buscador"""
     # Si el usuario escribe algo en el buscador, filtramos los expedientes.
@@ -142,6 +148,8 @@ def family_case_list(request):
 
     return render(request, 'family_case_list.html', {'cases': cases, 'query': query})
 
+@login_required
+@permission_required('core.add_familycase', raise_exception=True)
 def family_case_create(request):
     """Maneja la creación de un nuevo expediente familiar"""
     # Si el usuario envía datos por POST, creamos el expediente
@@ -158,6 +166,8 @@ def family_case_create(request):
 
     return render(request, 'family_case_form.html', {'form': form})
 
+@login_required
+@permission_required('core.view_familycase', raise_exception=True)
 def family_case_detail(request, case_id):
     """Muestra la ficha completa de un expediente y la lista de sus miembros"""
     # Buscamos la carpeta expediente y en caso de no existir se señala con un error 404.
@@ -171,6 +181,8 @@ def family_case_detail(request, case_id):
         'members': members
     })
 
+@login_required
+@permission_required('core.add_beneficiary', raise_exception=True)
 def beneficiary_create(request, case_id):
     """Añade un nuevo miembro (tutor/a o menor) a un expediente existente"""
     # Busca la carpeta (expediente) a la que vamos a vincular a esta persona
@@ -199,7 +211,7 @@ def beneficiary_create(request, case_id):
     return render(request, 'beneficiary_form.html', {'form': form, 'case': case})
 
 # --- DIRECTORIO: USUARIOS (BENEFICIARIOS) ---
-
+@login_required
 def beneficiary_list(request):
     """Muestra el listado de usuarios/menores con buscador"""
     query = request.GET.get('q', '')
@@ -243,6 +255,7 @@ def beneficiary_list(request):
         'current_status': filter_status,
     })
 
+@login_required
 def beneficiary_detail(request, pk):
     """Muestra la ficha detallada de un usuario/menor"""
     beneficiary = get_object_or_404(Beneficiary, pk=pk)
@@ -251,6 +264,7 @@ def beneficiary_detail(request, pk):
 
 # --- DIRECTORIO: CONTACTOS (PROFESIONALES EXTERNOS) ---
 
+@login_required
 def external_professional_list(request):
     """Muestra el listado de contactos de otras entidades con buscador"""
     query = request.GET.get('q', '')
@@ -268,14 +282,14 @@ def external_professional_list(request):
         
     return render(request, 'external_professional_list.html', {'professionals': professionals, 'query': query})
 
+@login_required
 def external_professional_detail(request, pk):
     """Muestra la ficha detallada de un contacto externo"""
     professional = get_object_or_404(ExternalProfessional, pk=pk)
     return render(request, 'external_professional_detail.html', {'professional': professional})
 
-
 # --- DIRECTORIO: TRABAJADORES (EQUIPO) ---
-
+@login_required
 def worker_list(request):
     """Muestra el listado del equipo de trabajadores con buscador"""
     query = request.GET.get('q', '')
@@ -293,14 +307,15 @@ def worker_list(request):
         
     return render(request, 'worker_list.html', {'workers': workers, 'query': query})
 
+@login_required
 def worker_detail(request, pk):
     """Muestra la ficha detallada de un trabajador"""
     worker = get_object_or_404(Worker, pk=pk)
     return render(request, 'worker_detail.html', {'worker': worker})
 
+@login_required
 def statistics_view(request):
     """Genera reportes de asistencia filtrados por fecha y alumno"""
-    
     # filtros
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
@@ -342,6 +357,7 @@ def statistics_view(request):
     }
     return render(request, 'statistics.html', context)
 
+@login_required
 def group_list(request):
     """Muestra el listado de actividades y grupos activos"""
     query = request.GET.get('q', '')

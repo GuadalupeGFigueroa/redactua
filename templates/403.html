@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex flex-column justify-content-center align-items-center h-100" style="min-height: 60vh">
+    <i class="bi bi-shield-lock-fill mb-4" style="font-size: 6rem; color: #E7C573;"></i>
+
+    <h1 class="fw-bold mb-3" style="color: #3A4E40;">Acceso denegado</h1>
+
+    <p class="text-muted text-center fs-5 mb-5" style="max-width: 600px;">
+        No tienes permiso para acceder a esta sección. Si crees que esto es un error, contacta con el administrador.
+    </p>
+
+    <a href="{% url 'home' %}" class="btn fw-semibold px-5 py-5 text-white" style="background-color: #3A4E40; border-radius: 50px;">
+        <i class="bi bi-house-door me-2"></i>Volver al inicio
+    </a>
+</div>
+{% endblock content %}
