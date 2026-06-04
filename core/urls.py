@@ -20,6 +20,7 @@ urlpatterns = [
     path('expedientes/nuevo/', views.family_case_create, name='family_case_create'),
     path('expedientes/<int:case_id>/', views.family_case_detail, name='family_case_detail'),
     path('expedientes/<int:case_id>/nuevo-miembro/', views.beneficiary_create, name='beneficiary_create'),
+    path('expediente/<int:case_id>/archivar/', views.family_case_archive, name='family_case_archive'),
 
     # Rutas para contactos (Profesionales Externos)
     path('contactos/', views.external_professional_list, name='external_professional_list'),

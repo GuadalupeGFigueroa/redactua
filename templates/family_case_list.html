@@ -4,24 +4,46 @@
 {% block content %}
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
     
-    <form method="GET" action="{% url 'family_case_list' %}" class="d-flex w-100" style="max-width: 500px;">
+    <form method="GET" action="{% url 'family_case_list' %}" class="d-flex flex-grow-1" style="max-width: 400px;">
+        <input type="hidden" name="status" value="{{ current_status }}">
+        
         <div class="input-group shadow-sm">
-            <input type="text" name="q" value="{{ query }}" class="form-control border-dark border-end-0 bg-white" placeholder="Buscar expediente, profesional o nombre...">
-            
-            {% if query %}
-                <a href="{% url 'family_case_list' %}" class="btn border-dark border-start-0 bg-white text-muted">
-                    <i class="bi bi-x-lg"></i>
-                </a>
-            {% endif %}
-            
-            <button class="btn btn-dark fw-semibold px-4" type="submit">Buscar</button>
+            <input type="text" name="q" value="{{ query }}" class="form-control border-dark border-end-0 bg-white" placeholder="Buscar expediente o familia...">
+            <button class="btn btn-dark fw-semibold px-4 rounded-end" type="submit">Buscar</button>
         </div>
     </form>
 
-    <a href="{% url 'family_case_create' %}" class="btn btn-dark rounded-pill px-4 fw-semibold shadow-sm text-nowrap">
-        <i class="bi bi-plus-lg me-2"></i>Nuevo Expediente
-    </a>
+    <div class="d-flex gap-2 flex-wrap">
+        
+        <div class="dropdown">
+            <button class="btn btn-outline-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-funnel me-1"></i>
+                {% if current_status == 'archived' %}Archivados{% else %}Activos{% endif %}
+            </button>
+            <ul class="dropdown-menu shadow-sm border-0">
+                <li>
+                    <a class="dropdown-item {% if current_status == 'active' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&status=active">
+                        Expedientes activos
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item {% if current_status == 'archived' %}fw-bold bg-light{% endif %}" href="?q={{ query }}&status=archived">
+                        Expedientes archivados
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        {% if perms.core.add_familycase %}
+            <a href="{% url 'family_case_create' %}" class="btn text-white fw-semibold px-3" style="background-color: #3A4E40;" title="Registrar nuevo expediente">
+                <i class="bi bi-plus-lg me-1"></i> Nuevo expediente
+            </a>
+        {% endif %}
+        
+    </div>
 </div>
+
+
 
 <div class="card shadow-sm border-0 mb-4 bg-white rounded-4 overflow-hidden">
     <div class="card-body p-0">

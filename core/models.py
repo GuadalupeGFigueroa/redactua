@@ -22,7 +22,6 @@ class Worker(AbstractUser):
 
 # 2. MODELOS PARA PROFESIONALES EXTERNOS (PSTC, UTS, tutores, etc.)
 
-
 class WorkPlace(models.Model):
     place_name = models.CharField(max_length=100, verbose_name="Lugar de trabajo")
 
@@ -66,12 +65,15 @@ class FamilyCase(models.Model):
     external_professional = models.ForeignKey(
         ExternalProfessional, on_delete=models.SET_NULL, null=True, blank=True, related_name='family_cases'
     )
+    
+    is_archived = models.BooleanField(default=False, verbose_name="Expediente archivado")
 
     class Meta:
         db_table = 'FAMILY_CASE'
 
     def __str__(self):
         return f"Expediente {self.file_number}"
+    
     def save(self, *args, **kwargs):
         # Si el usuario no introduce el número de expediente a mano
         if not self.file_number:

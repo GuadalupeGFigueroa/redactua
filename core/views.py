@@ -135,18 +135,32 @@ def family_case_list(request):
     # Si el usuario escribe algo en el buscador, filtramos los expedientes.
     query = request.GET.get('q', '')
 
+    filter_status = request.GET.get('status', 'active')
+
+    # 1. Filtramos primero por el estado
+    if filter_status == 'archived':
+        cases = FamilyCase.objects.filter(is_archived=True)
+    else:
+        cases = FamilyCase.objects.filter(is_archived=False)
+
+    # 2. Si hay búsqueda, la aplicamos sobre esos expedientes
     if query:
-        cases = FamilyCase.objects.filter(
+        cases = cases.filter(
             Q(file_number__icontains=query) |
             Q(beneficiaries__first_name__icontains=query) |
             Q(beneficiaries__last_name1__icontains=query) |
             Q(beneficiaries__last_name2__icontains=query)
-        ).distinct().order_by('-creation_date') # Esto evita que salgan los expedientes duplicados si hay 2 alumnos hermanos
-    else:
-        # Si no se especifica, obtenemos todos los expeedientes ordenados del más nuevo al más antiguo
-        cases = FamilyCase.objects.all().order_by('-creation_date')
+        ).distinct()
 
-    return render(request, 'family_case_list.html', {'cases': cases, 'query': query})
+    # 3. Ordenamos por la fecha de creación
+    cases = cases.order_by('-creation_date')
+
+    return render(request, 'family_case_list.html', {
+        'cases': cases, 
+        'query': query,
+        'current_status': filter_status
+    })
+
 
 @login_required
 @permission_required('core.add_familycase', raise_exception=True)
@@ -180,6 +194,19 @@ def family_case_detail(request, case_id):
         'case': case,
         'members': members
     })
+
+@login_required
+@permission_required('core.change_familycase', raise_exception=True)
+def family_case_archive(request, case_id):
+    """Archiva o desarchiva un expediente familiar completo"""
+    case = get_object_or_404(FamilyCase, id=case_id)
+    
+    if request.method == 'POST':
+        case.is_archived = not case.is_archiived
+        case.save()
+        return redirect('family_case_detail', case_id=case.id)
+    
+    return render(request, 'family_case_confirm_archive.html', {'case': case})
 
 # --- GESTIÓN DE MIEMBROS DE UN EXPEDIENTE ---
 @login_required
