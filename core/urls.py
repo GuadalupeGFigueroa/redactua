@@ -10,6 +10,8 @@ urlpatterns = [
     # Rutas para usuarios (Beneficiarios)
     path('usuarios/', views.beneficiary_list, name='beneficiary_list'),
     path('usuarios/<int:pk>/', views.beneficiary_detail, name='beneficiary_detail'),
+    path('usuarios/<int:pk>/editar/', views.beneficiary_update, name='beneficiary_update'),
+    path('usuarios/<int:pk>/eliminar/', views.beneficiary_delete, name='beneficiary_delete'),
 
     # Rutas para expedientes familiares
     path('expedientes/', views.family_case_list, name='family_case_list'),

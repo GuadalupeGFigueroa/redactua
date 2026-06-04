@@ -181,6 +181,7 @@ def family_case_detail(request, case_id):
         'members': members
     })
 
+# --- GESTIÓN DE MIEMBROS DE UN EXPEDIENTE ---
 @login_required
 @permission_required('core.add_beneficiary', raise_exception=True)
 def beneficiary_create(request, case_id):
@@ -209,6 +210,37 @@ def beneficiary_create(request, case_id):
         form = BeneficiaryForm()
         
     return render(request, 'beneficiary_form.html', {'form': form, 'case': case})
+
+@login_required
+@permission_required('core.change_beneficiary', raise_exception=True)
+def beneficiary_update(request, pk):
+    """Carga el formulario de edición con los datos de un menor que  ya existe"""
+    beneficiary = get_object_or_404(Beneficiary, pk=pk)
+    case = beneficiary.family_case  # Obtenemos el expediente al que pertenece el beneficiario
+
+    if request.method == 'POST': 
+        form = BeneficiaryForm(request.POST, instance=beneficiary)
+        if form.is_valid():
+            form.save()
+            return redirect('beneficiary_detail', pk=beneficiary.pk)
+    else:
+        form = BeneficiaryForm(instance=beneficiary)
+    
+    return render(request, 'beneficiary_form.html', {'form': form, 'case': case})
+
+@login_required
+@permission_required('core.delete_beneficiary', raise_exception=True)
+def beneficiary_delete(request, pk):
+    """Pide confirmación y elimina un usuario de la base de datos"""
+    beneficiary = get_object_or_404(Beneficiary, pk=pk)
+    case_id = beneficiary.family_case.id
+
+    if request.method == 'POST':
+        # Si el usuario confirma, se elimina
+        beneficiary.delete()
+        return redirect('family_case_detail', case_id=case_id)
+    
+    return render(request, 'beneficiary_confirm_delete.html', {'beneficiary': beneficiary})
 
 # --- DIRECTORIO: USUARIOS (BENEFICIARIOS) ---
 @login_required

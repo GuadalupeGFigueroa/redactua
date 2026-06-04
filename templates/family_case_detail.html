@@ -25,7 +25,7 @@
                 <p class="mb-0 fw-semibold fs-5">{{ case.external_professional|default:"Ninguno" }}</p>
             </div>
             <div class="col-md-8">
-                <p class="text-muted mb-1 small fw-bold text-uppercase">Notas Generales del Núcleo Familiar</p>
+                <p class="text-muted mb-1 small fw-bold text-uppercase">Notas Generales del núcleo familiar</p>
                 <p class="mb-0">{{ case.notes|default:"Sin observaciones registradas." }}</p>
             </div>
         </div>
@@ -50,7 +50,7 @@
                             <h5 class="fw-bold mb-0 mt-1">{{ member.first_name }} {{ member.last_name1 }} {{ member.last_name2|default:"" }}</h5>
                             <span class="text-muted small">{{ member.family_role|default:"" }}</span>
                         </div>
-                        <button class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">Editar</button>
+                        <a href="{% url 'beneficiary_update' member.id %}" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">Editar</a>
                     </div>
 
                     <div class="row g-3 mt-2">
