@@ -24,6 +24,17 @@
         <a href="{% url 'beneficiary_update' beneficiary.id %}" class="btn btn-outline-dark fw-semibold">
             <i class="bi bi-pencil me-1"></i> Editar
         </a>
+        
+        {% if beneficiary.active %}
+            <a href="{% url 'beneficiary_deactivate' beneficiary.id %}" class="btn btn-secondary fw-semibold text-white">
+                <i class="bi bi-person-down me-1"></i> Dar de baja
+            </a>
+        {% else %}
+            <a href="{% url 'beneficiary_activate' beneficiary.id %}" class="btn btn-success fw-semibold text-white" style="background-color: #3A4E40; border-color: #3A4E40;">
+                <i class="bi bi-person-up me-1"></i> Dar de alta
+            </a>
+        {% endif %}
+
         <a href="{% url 'beneficiary_delete' beneficiary.id %}" class="btn text-white fw-semibold" style="background-color: #C0392B;">
             <i class="bi bi-trash me-1"></i> Eliminar
         </a>

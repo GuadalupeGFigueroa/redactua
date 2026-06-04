@@ -11,6 +11,8 @@ urlpatterns = [
     path('usuarios/', views.beneficiary_list, name='beneficiary_list'),
     path('usuarios/<int:pk>/', views.beneficiary_detail, name='beneficiary_detail'),
     path('usuarios/<int:pk>/editar/', views.beneficiary_update, name='beneficiary_update'),
+    path('usuarios/<int:pk>/baja/', views.beneficiary_deactivate, name='beneficiary_deactivate'),
+    path('usuarios/<int:pk>/reactivar/', views.beneficiary_activate, name='beneficiary_activate'),
     path('usuarios/<int:pk>/eliminar/', views.beneficiary_delete, name='beneficiary_delete'),
 
     # Rutas para expedientes familiares
@@ -32,14 +34,14 @@ urlpatterns = [
 
     # Rutas para asistencia 
     path('asistencia/', views.attendance_view, name='attendance'),
+    path('api/attendance/update/', views.update_attendance, name='api_update_attendance'),
 
     # Rutas para estadísticas
     path('estadisticas/', views.statistics_view, name='statistics'),
 
-    # --- RUTAS DE API INTERNA ---
+    # Rutas para la API
     path('api/group/<int:group_id>/students/', views.get_students_by_group, name='api_group_students'),
-    path('api/attendance/update/', views.update_attendance, name='api_update_attendance'),
-
+    
     # Ruta para el cierre de sesión nativo de Django
     path('logout/', LogoutView.as_view(next_page='home'), name='logout'),
 ]

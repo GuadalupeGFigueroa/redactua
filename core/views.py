@@ -293,6 +293,33 @@ def beneficiary_detail(request, pk):
     beneficiary = get_object_or_404(Beneficiary, pk=pk)
     return render(request, 'beneficiary_detail.html', {'beneficiary': beneficiary})
 
+@login_required
+@permission_required('core.change_beneficiary', raise_exception=True)
+def beneficiary_deactivate(request, pk):
+    """Tramita la baja de un usuario/menor conservando su historial"""
+    beneficiary = get_object_or_404(Beneficiary, pk=pk)
+
+    if request.method == 'POST':
+        beneficiary.active = False  # Cambiamos el estado a baja
+        beneficiary.enrolled_groups.clear() # Eliminamos todos los grupos
+        beneficiary.save()
+
+        return redirect('beneficiary_detail', pk=beneficiary.pk)
+    
+    return render(request, 'beneficiary_confirm_deactivate.html', {'beneficiary': beneficiary})
+
+@login_required
+@permission_required('core.change_beneficiary', raise_exception=True)
+def beneficiary_activate(request, pk):
+    """Reactiva a un usuario/menor que estaba de baja"""
+    beneficiary = get_object_or_404(Beneficiary, pk=pk)
+    
+    if request.method == 'POST':
+        beneficiary.active = True
+        beneficiary.save()
+        return redirect('beneficiary_detail', pk=beneficiary.pk)
+        
+    return render(request, 'beneficiary_confirm_activate.html', {'beneficiary': beneficiary})
 
 # --- DIRECTORIO: CONTACTOS (PROFESIONALES EXTERNOS) ---
 
