@@ -9,6 +9,7 @@ urlpatterns = [
     
     # Rutas para usuarios (Beneficiarios)
     path('usuarios/', views.beneficiary_list, name='beneficiary_list'),
+    path('usuarios/exportar/', views.export_beneficiaries_csv, name='export_beneficiaries_csv'),
     path('usuarios/<int:pk>/', views.beneficiary_detail, name='beneficiary_detail'),
     path('usuarios/<int:pk>/editar/', views.beneficiary_update, name='beneficiary_update'),
     path('usuarios/<int:pk>/baja/', views.beneficiary_deactivate, name='beneficiary_deactivate'),
@@ -18,6 +19,7 @@ urlpatterns = [
     # Rutas para expedientes familiares
     path('expedientes/', views.family_case_list, name='family_case_list'),
     path('expedientes/nuevo/', views.family_case_create, name='family_case_create'),
+    path('expedientes/<int:case_id>/editar/', views.family_case_update, name='family_case_update'),
     path('expedientes/<int:case_id>/', views.family_case_detail, name='family_case_detail'),
     path('expedientes/<int:case_id>/nuevo-miembro/', views.beneficiary_create, name='beneficiary_create'),
     path('expediente/<int:case_id>/archivar/', views.family_case_archive, name='family_case_archive'),

@@ -2,50 +2,50 @@
 {% load static %}
 
 {% block content %}
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start mb-4 gap-3">
     <div>
-        <h2 class="text-redactua-primary fw-bold mb-0">Expediente {{ case.file_number }}</h2>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <a href="{% url 'family_case_list' %}" class="text-decoration-none text-muted small">
-                    <i class="bi bi-arrow-left me-1"></i> Volver a expedientes
-                </a>
-                <h2 class="text-redactua-primary fw-bold mb-0 mt-2">
-                    Expediente {{ case.file_number }}
-                </h2>
-                {% if case.is_archived %}
-                    <span class="badge bg-secondary mt-2"><i class="bi bi-archive-fill me-1"></i> Archivado</span>
-                {% else %}
-                    <span class="badge mt-2" style="background-color: #3A4E40;">Expediente activo</span>
-                {% endif %}
-            </div>
-
-            <div class="d-flex gap-2">
-                {% if case.is_archived %}
-                    <a href="{% url 'family_case_archive' case.id %}" class="btn btn-outline-dark fw-semibold">
-                        <i class="bi bi-box-arrow-up me-1"></i> Reactivar expediente
-                    </a>
-                {% else %}
-                    <a href="{% url 'family_case_archive' case.id %}" class="btn btn-secondary text-white fw-semibold">
-                        <i class="bi bi-archive me-1"></i> Archivar expediente
-                    </a>
-                {% endif %}
-            </div>
+        <a href="{% url 'family_case_list' %}" class="text-decoration-none text-muted small d-block mb-1">
+            <i class="bi bi-arrow-left me-1"></i> Volver a expedientes
+        </a>
+        <h2 class="text-redactua-primary fw-bold mb-0">
+            Expediente {{ case.file_number }}
+        </h2>
+        
+        <div class="mt-2">
+            {% if case.is_archived %}
+                <span class="badge bg-secondary me-2"><i class="bi bi-archive-fill me-1"></i> Archivado</span>
+            {% else %}
+                <span class="badge me-2" style="background-color: #3A4E40;">Expediente activo</span>
+            {% endif %}
+            <span class="text-muted small">
+                <i class="bi bi-calendar3 me-1"></i> Abierto el {{ case.creation_date|date:"d/m/Y" }}
+            </span>
         </div>
-
-        <span class="text-muted small">
-            <i class="bi bi-calendar3 me-1"></i> Abierto el {{ case.creation_date|date:"d/m/Y" }}
-        </span>
     </div>
     
-    <div class="d-flex gap-2 flex-wrap">
-        <a href="{% url 'beneficiary_create' case.id %}" class="btn btn-dark fw-semibold rounded-3"><i class="bi bi-person-plus me-2"></i>Añadir miembro</a>
-        <button class="btn btn-dark fw-semibold rounded-3"><i class="bi bi-pencil-square me-2"></i>Editar expte.</button>
-        <button class="btn btn-dark fw-semibold rounded-3"><i class="bi bi-box-arrow-right me-2"></i>Dar de baja</button>
+    <div class="d-flex gap-2 flex-wrap mt-2 mt-md-0">
+        
+        {% if case.is_archived %}
+            <a href="{% url 'family_case_archive' case.id %}" class="btn btn-light border fw-semibold rounded-3">
+                <i class="bi bi-box-arrow-up me-1"></i> Reactivar
+            </a>
+        {% else %}
+            <a href="{% url 'family_case_archive' case.id %}" class="btn btn-light border fw-semibold rounded-3">
+                <i class="bi bi-archive me-1"></i> Archivar
+            </a>
+        {% endif %}
+
+        <a href="{% url 'family_case_update' case.id %}" class="btn btn-light border fw-semibold rounded-3">
+            <i class="bi bi-pencil-square me-1"></i> Editar
+        </a>
+
+        <a href="{% url 'beneficiary_create' case.id %}" class="btn text-white fw-semibold rounded-3" style="background-color: #3A4E40;">
+            <i class="bi bi-person-plus me-1"></i> Añadir miembro
+        </a>
     </div>
 </div>
 
-<div class="card shadow-sm border-0 mb-4 bg-white rounded-4 border-start border-4 border-success">
+<div class="card shadow-sm border-0 mb-4 bg-white rounded-4 border-start border-4" style="border-left-color: #839B88 !important;">
     <div class="card-body p-4">
         <div class="row">
             <div class="col-md-4 mb-3 mb-md-0">
@@ -72,13 +72,13 @@
                             {% if member.is_tutor %}
                                 <span class="badge bg-dark mb-2 px-3 py-2"><i class="bi bi-shield-check me-1"></i> Tutor/a Legal</span>
                             {% else %}
-                                <span class="badge bg-success mb-2 px-3 py-2"><i class="bi bi-person me-1"></i> Menor beneficiario</span>
+                                <span class="badge mb-2 px-3 py-2 text-white" style="background-color: #839B88;"><i class="bi bi-person me-1"></i> Menor beneficiario</span>
                             {% endif %}
                             
                             <h5 class="fw-bold mb-0 mt-1">{{ member.first_name }} {{ member.last_name1 }} {{ member.last_name2|default:"" }}</h5>
                             <span class="text-muted small">{{ member.family_role|default:"" }}</span>
                         </div>
-                        <a href="{% url 'beneficiary_update' member.id %}" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">Editar</a>
+                        <a href="{% url 'beneficiary_update' member.id %}" class="btn btn-light border btn-sm rounded-pill px-3 fw-semibold text-dark shadow-sm">Editar</a>
                     </div>
 
                     <div class="row g-3 mt-2">

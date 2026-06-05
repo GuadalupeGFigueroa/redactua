@@ -7,12 +7,15 @@ from .models import Group, Beneficiary, Attendance, FamilyCase, Worker, External
 from .forms import FamilyCaseForm, BeneficiaryForm
 from datetime import date
 import json
+import csv
+from django.http import HttpResponse
 
 @login_required
 def home_view(request):
     """Renderiza la plantilla base para comprobar la estructura de navegación"""
     return render(request, 'base.html')
 
+# --- ASISTENCIA ---
 @login_required
 def attendance_view(request):
     """Muestra la pantalla de asistencia con los grupos y el alumnado correspondiente"""
@@ -126,7 +129,7 @@ def update_attendance(request):
         
     return JsonResponse({'error': 'Metodo no permitido'}, status=405)   
 
-# Gestión de expedientes
+# ----- EXPEDIENTES FAMILIARES ------
 
 @login_required
 @permission_required('core.view_familycase', raise_exception=True) #Restringimos accesos a solo lectura para ciertos roles
@@ -161,7 +164,6 @@ def family_case_list(request):
         'current_status': filter_status
     })
 
-
 @login_required
 @permission_required('core.add_familycase', raise_exception=True)
 def family_case_create(request):
@@ -173,12 +175,28 @@ def family_case_create(request):
         if form.is_valid():
             form.save()
             return redirect('family_case_list')
-        
+
     # Si el usuario envía datos por GET, mostramos el formulario vacio    
     else:
         form = FamilyCaseForm()
 
     return render(request, 'family_case_form.html', {'form': form})
+
+@login_required
+@permission_required('core.change_familycase', raise_exception=True)
+def family_case_update(request, case_id):
+    """Carga el formulario para editar los datos genéricos de un expediente familiar"""
+    case = get_object_or_404(FamilyCase, id=case_id)
+    
+    if request.method == 'POST':
+        form = FamilyCaseForm(request.POST, instance=case)
+        if form.is_valid():
+            form.save()
+            return redirect('family_case_detail', case_id=case.id)
+    else:
+        form = FamilyCaseForm(instance=case)
+        
+    return render(request, 'family_case_form.html', {'form': form, 'case': case})
 
 @login_required
 @permission_required('core.view_familycase', raise_exception=True)
@@ -207,6 +225,7 @@ def family_case_archive(request, case_id):
         return redirect('family_case_detail', case_id=case.id)
     
     return render(request, 'family_case_confirm_archive.html', {'case': case})
+
 
 # --- GESTIÓN DE MIEMBROS DE UN EXPEDIENTE ---
 @login_required
@@ -347,6 +366,49 @@ def beneficiary_activate(request, pk):
         return redirect('beneficiary_detail', pk=beneficiary.pk)
         
     return render(request, 'beneficiary_confirm_activate.html', {'beneficiary': beneficiary})
+
+@login_required
+@permission_required('core.view_beneficiary', raise_exception=True)
+def export_beneficiaries_csv(request):
+    """Genera y descarga un archivo CSV con el listado de usuarios compatible con Excel"""
+    
+    # Configuramos la respuesta del servidor para que el navegador sepa que es un archivo descargable
+    response = HttpResponse(content_type='text/csv')
+    # Añadimos el BOM (Byte Order Mark) para que Excel lea correctamente tildes y eñes
+    response.write('\ufeff'.encode('utf8'))
+    response['Content-Disposition'] = 'attachment; filename="usuarios_redactua.csv"'
+
+    # Usamos el punto y coma porque el Excel en español lo requiere para separar columnas
+    writer = csv.writer(response, delimiter=';')
+    
+    # 1. Escribimos la fila de cabeceras (los títulos de las columnas)
+    writer.writerow([
+        'Expediente', 'Nombre', 'Primer Apellido', 'Segundo Apellido', 
+        'Rol Familiar', 'Fecha Nacimiento', 'Teléfono', 'Email', 'Estado'
+    ])
+
+    # 2. Obtenemos los datos ordenados
+    beneficiaries = Beneficiary.objects.all().order_by('family_case__file_number', 'last_name1')
+
+    # 3. Recorremos los usuarios y escribimos una fila por cada uno
+    for b in beneficiaries:
+        estado = "Activo" if b.active else "Baja"
+        expediente = b.family_case.file_number if b.family_case else "Sin asignar"
+        fecha_nac = b.birth_date.strftime('%d/%m/%Y') if b.birth_date else "No registrada"
+        
+        writer.writerow([
+            expediente,
+            b.first_name,
+            b.last_name1,
+            b.last_name2 or "", # Ponemos un string vacío si no tiene segundo apellido
+            b.family_role or "",
+            fecha_nac,
+            b.phone_number or "",
+            b.email or "",
+            estado
+        ])
+
+    return response
 
 # --- DIRECTORIO: CONTACTOS (PROFESIONALES EXTERNOS) ---
 

@@ -28,9 +28,15 @@
                 <td>{{ group.training_action.start_time|time:"H:i" }} - {{ group.training_action.stop_time|time:"H:i" }}</td>
                 <td>{{ group.training_action.worker.first_name|default:"Sin asignar" }} {{ group.training_action.worker.last_name|default:"" }}</td>
                 <td>
-                    <span class="badge {% if group.num_enrolled > 0 %}bg-success{% else %}bg-secondary{% endif %} rounded-pill fs-6">
-                        {{ group.num_enrolled }}
-                    </span>
+                    {% if group.num_enrolled > 0 %}
+                        <span class="badge rounded-pill fs-6 text-white" style="background-color: #839B88;">
+                            {{ group.num_enrolled }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary rounded-pill fs-6 text-white">
+                            {{ group.num_enrolled }}
+                        </span>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}

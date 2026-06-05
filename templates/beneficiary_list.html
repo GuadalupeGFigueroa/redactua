@@ -26,7 +26,7 @@
     <div class="d-flex gap-2 flex-wrap">
         
         <div class="dropdown">
-            <button class="btn btn-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <button class="btn btn-outline-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 Filtrar
             </button>
             <ul class="dropdown-menu shadow-sm border-0">
@@ -37,7 +37,7 @@
         </div>
 
         <div class="dropdown">
-            <button class="btn btn-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <button class="btn btn-outline-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 Agrupar
             </button>
             <ul class="dropdown-menu shadow-sm border-0">
@@ -46,7 +46,7 @@
         </div>
 
         <div class="dropdown">
-            <button class="btn btn-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <button class="btn btn-outline-dark fw-semibold px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
                 Ordenar
             </button>
             <ul class="dropdown-menu shadow-sm border-0">
@@ -118,8 +118,8 @@
     <div class="text-dark fw-semibold small">
         Total registros: {{ beneficiaries|length }}
     </div>
-    <button class="btn btn-dark fw-semibold px-4 shadow-sm" onclick="alert('Funcionalidad de exportación a Excel pendiente de implementación.')">
-        Exportar
-    </button>
+    <a href="{% url 'export_beneficiaries_csv' %}" class="btn btn-outline-success fw-semibold shadow-sm">
+        <i class="bi bi-file-earmark-excel me-1"></i> Exportar a Excel
+    </a>
 </div>
 {% endblock %}
