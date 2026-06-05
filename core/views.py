@@ -15,6 +15,22 @@ def home_view(request):
     """Renderiza la plantilla base para comprobar la estructura de navegación"""
     return render(request, 'base.html')
 
+# --- HOME ---
+@login_required
+def home_view(request):
+    """Renderiza el panel de control (Dashboard) de la aplicación"""
+    # Contadores rápidos para mostrar impacto
+    active_kids_count = Beneficiary.objects.filter(active=True, is_tutor=False).count()
+    active_cases_count = FamilyCase.objects.filter(is_archived=False).count()
+    
+    context = {
+        'active_kids': active_kids_count,
+        'active_cases': active_cases_count,
+    }
+    # AQUÍ ESTÁ LA CLAVE: Ahora renderizamos home.html
+    return render(request, 'home.html', context)
+
+
 # --- ASISTENCIA ---
 @login_required
 def attendance_view(request):
@@ -70,7 +86,7 @@ def attendance_view(request):
 
 @login_required
 def get_students_by_group(request, group_id):
-    """API interna: DEvuelve los alumnos de un grupo específico en formato JSON"""
+    """API interna: Devuelve los alumnos de un grupo específico en formato JSON"""
     try:
         group = Group.objects.get(id=group_id)
         # Obtenemos los y las alumnas ordenadas alfabéticamente por el primer apellido

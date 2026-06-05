@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-5">
+    <h1 class="fw-bold" style="color: #3A4E40;">¡Hola, {{ request.user.first_name|default:request.user.username }}!</h1>
+    <p class="text-muted fs-5">Te damos la bienvenida a tu panel de gestión de RedActúa.</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 rounded-4" style="border-left: 5px solid #839B88 !important; background-color: #f8f9fa;">
+            <div class="card-body p-4 d-flex align-items-center">
+                <div class="rounded-circle d-flex justify-content-center align-items-center text-white me-3" style="width: 60px; height: 60px; background-color: #839B88;">
+                    <i class="bi bi-people-fill fs-3"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted fw-bold mb-1 text-uppercase">Menores Activos</h6>
+                    <h2 class="fw-bold mb-0" style="color: #3A4E40;">{{ active_kids }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm border-0 rounded-4" style="border-left: 5px solid #E7C573 !important; background-color: #f8f9fa;">
+            <div class="card-body p-4 d-flex align-items-center">
+                <div class="rounded-circle d-flex justify-content-center align-items-center text-dark me-3" style="width: 60px; height: 60px; background-color: #E7C573;">
+                    <i class="bi bi-folder2-open fs-3"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted fw-bold mb-1 text-uppercase">Expedientes Abiertos</h6>
+                    <h2 class="fw-bold mb-0 text-dark">{{ active_cases }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="fw-bold mb-4" style="color: #3A4E40;">Accesos rápidos</h4>
+<div class="row g-4">
+    
+    <div class="col-md-6">
+        <a href="{% url 'attendance' %}" class="text-decoration-none">
+            <div class="card shadow-sm border-0 rounded-4 h-100" style="background-color: #3A4E40; transition: transform 0.2s;">
+                <div class="card-body p-5 text-center text-white">
+                    <i class="bi bi-clipboard-check display-1 mb-3"></i>
+                    <h3 class="fw-bold">Pasar lista</h3>
+                    <p class="mb-0 text-white-50">Registrar la asistencia diaria de los grupos.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <div class="col-md-6">
+        <a href="{% url 'statistics' %}" class="text-decoration-none">
+            <div class="card shadow-sm border-0 rounded-4 h-100 bg-white" style="border: 2px solid #3A4E40 !important; transition: transform 0.2s;">
+                <div class="card-body p-5 text-center" style="color: #3A4E40;">
+                    <i class="bi bi-bar-chart-line display-1 mb-3"></i>
+                    <h3 class="fw-bold">Estadísticas</h3>
+                    <p class="text-muted mb-0">Consultar informes de asistencia y participación.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+</div>
+
+<style>
+    .card.shadow-sm.border-0.rounded-4.h-100:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+</style>
+{% endblock %}
