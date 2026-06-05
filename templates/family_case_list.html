@@ -49,11 +49,14 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
+
                 <thead class="table-light">
                     <tr>
                         <th class="ps-4 py-3 text-muted fw-bold">Nº Expte.</th>
-                        <th class="py-3 text-muted fw-bold">Fecha de Creación</th>
-                        <th class="py-3 text-muted fw-bold">Profesional Externo</th>
+                        <th class="py-3 text-muted fw-bold">Fecha de creación</th>
+                        <th class="py-3 text-muted fw-bold">Tutor/a</th>
+                        <th class="py-3 text-center text-muted fw-bold">Miembros</th>
+                        <th class="py-3 text-muted fw-bold">Profesional externo</th>
                         <th class="text-end pe-4 py-3 text-muted fw-bold">Acciones</th>
                     </tr>
                 </thead>
@@ -62,6 +65,15 @@
                     <tr>
                         <td class="ps-4 fw-bold text-dark">{{ case.file_number|default:"Pendiente" }}</td>
                         <td>{{ case.creation_date|date:"d/m/Y" }}</td>
+                        
+                        <td class="tutor-cell">{% for member in case.beneficiaries.all %}{% if member.is_tutor %}
+                            <span class="d-block">{{ member.first_name }} {{ member.last_name1 }}</span>{% endif %}{% endfor %}
+                        </td>
+                        
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border">{{ case.beneficiaries.count }}</span>
+                        </td>
+
                         <td>{{ case.external_professional|default:"Sin asignar" }}</td>
                         <td class="text-end pe-4">
                             <a href="{% url 'family_case_detail' case.id %}" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-semibold">Ver ficha</a>
@@ -69,7 +81,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="text-center py-5 text-muted">
+                        <td colspan="6" class="text-center py-5 text-muted">
                             <i class="bi bi-folder-x fs-1 d-block mb-2 opacity-50"></i>
                             No hay expedientes registrados en el sistema.
                         </td>
