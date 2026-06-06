@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Q, Count
 from .models import Group, Beneficiary, Attendance, FamilyCase, Worker, ExternalProfessional
-from .forms import FamilyCaseForm, BeneficiaryForm
+from .forms import FamilyCaseForm, BeneficiaryForm, ExternalProfessionalForm
 from datetime import date
 import json
 import csv
@@ -248,7 +248,7 @@ def family_case_archive(request, case_id):
 @permission_required('core.add_beneficiary', raise_exception=True)
 def beneficiary_create(request, case_id):
     """Añade un nuevo miembro (tutor/a o menor) a un expediente existente"""
-    # Busca la carpeta (expediente) a la que vamos a vincular a esta persona
+    # Buscador para la carpeta (expediente) a la que vamos a vincular a esta persona
     case = get_object_or_404(FamilyCase, id=case_id)
     
     if request.method == 'POST':
@@ -283,10 +283,18 @@ def beneficiary_update(request, pk):
     if request.method == 'POST': 
         form = BeneficiaryForm(request.POST, instance=beneficiary)
         if form.is_valid():
-            form.save()
+            updated_member = form.save()
+
+            selected_groups = form.cleaned_data.get('groups')
+            if selected_groups is not None:
+                updated_member.enrolled_groups.set(selected_groups)
+
             return redirect('beneficiary_detail', pk=beneficiary.pk)
     else:
-        form = BeneficiaryForm(instance=beneficiary)
+        form = BeneficiaryForm(
+            instance=beneficiary,
+            initial={'groups': beneficiary.enrolled_groups.all()}
+        )
     
     return render(request, 'beneficiary_form.html', {'form': form, 'case': case})
 
@@ -451,6 +459,23 @@ def external_professional_detail(request, pk):
     """Muestra la ficha detallada de un contacto externo"""
     professional = get_object_or_404(ExternalProfessional, pk=pk)
     return render(request, 'external_professional_detail.html', {'professional': professional})
+
+@login_required
+@permission_required('core.change_externalprofessional', raise_exception=True)
+def external_professional_update(request, pk):
+    """Carga el formulario para editar un profesional externo"""
+    profesional = get_object_or_404(ExternalProfessional, pk=pk)
+    
+    if request.method == 'POST':
+        form = ExternalProfessionalForm(request.POST, instance=profesional)
+        if form.is_valid():
+            form.save()
+            return redirect('external_professional_detail', pk=profesional.id)
+    else:
+        form = ExternalProfessionalForm(instance=profesional)
+        
+    return render(request, 'external_professional_form.html', {'form': form, 'profesional': profesional})
+
 
 # --- DIRECTORIO: TRABAJADORES (EQUIPO) ---
 @login_required

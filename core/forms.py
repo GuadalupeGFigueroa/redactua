@@ -1,5 +1,5 @@
 from django import forms
-from .models import FamilyCase, Beneficiary, Group
+from .models import FamilyCase, Beneficiary, Group, ExternalProfessional
 
 class FamilyCaseForm(forms.ModelForm):
     """Formulario para crear o editar el expediente familiar"""
@@ -49,4 +49,16 @@ class BeneficiaryForm(forms.ModelForm):
             'notes': forms.Textarea(attrs={'class': 'form-control bg-light', 'rows': 3}),
         }
 
-
+class ExternalProfessionalForm(forms.ModelForm):
+    class Meta:
+        model = ExternalProfessional
+        fields = ['first_name', 'last_name1', 'last_name2', 'phone_number', 'email', 'category', 'work_place']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name1': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name2': forms.TextInput(attrs={'class': 'form-control'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'category': forms.TextInput(attrs={'class': 'form-control'}),
+            'work_place': forms.Select(attrs={'class': 'form-select'}),
+        }

@@ -27,6 +27,7 @@ urlpatterns = [
     # Rutas para contactos (Profesionales Externos)
     path('contactos/', views.external_professional_list, name='external_professional_list'),
     path('contactos/<int:pk>/', views.external_professional_detail, name='external_professional_detail'),
+    path('contactos/<int:pk>/editar/', views.external_professional_update, name='external_professional_update'),
 
     # Rutas para trabajadores (Equipo)
     path('equipo/', views.worker_list, name='worker_list'),
