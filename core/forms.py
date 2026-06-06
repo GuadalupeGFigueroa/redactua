@@ -1,5 +1,7 @@
 from django import forms
 from .models import FamilyCase, Beneficiary, Group, ExternalProfessional
+from django.core.exceptions import ValidationError
+from datetime import date
 
 class FamilyCaseForm(forms.ModelForm):
     """Formulario para crear o editar el expediente familiar"""
@@ -37,8 +39,7 @@ class BeneficiaryForm(forms.ModelForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control bg-light'}),
             'last_name1': forms.TextInput(attrs={'class': 'form-control bg-light'}),
             'last_name2': forms.TextInput(attrs={'class': 'form-control bg-light'}),
-            # Usamos 'type': 'date' para que salga el calendario nativo del navegador.
-            'birth_date': forms.DateInput(attrs={'class': 'form-control bg-light', 'type': 'date'}),
+            'birth_date': forms.DateInput(attrs={'class': 'form-control bg-light', 'type': 'date'}), # Agregamos el atributo 'type': 'date' para que salga el calendario nativo del navegador.
             'nationality': forms.Select(attrs={'class': 'form-select bg-light'}),
             'phone_number': forms.TextInput(attrs={'class': 'form-control bg-light'}),
             'email': forms.EmailInput(attrs={'class': 'form-control bg-light'}),
@@ -48,6 +49,11 @@ class BeneficiaryForm(forms.ModelForm):
             'derivation': forms.CheckboxInput(attrs={'class': 'form-check-input border-dark'}),
             'notes': forms.Textarea(attrs={'class': 'form-control bg-light', 'rows': 3}),
         }
+    def clean_birth_date(self):
+        birth_date = self.cleaned_data.get('birth_date')
+        if birth_date and birth_date > date.today():
+            raise ValidationError("La fecha de nacimiento no puede ser en el futuro.")
+        return birth_date
 
 class ExternalProfessionalForm(forms.ModelForm):
     class Meta:
