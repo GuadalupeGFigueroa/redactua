@@ -128,7 +128,7 @@ def update_attendance(request):
             if not incidence_time:
                 incidence_time = None
 
-            # 2. Guardamos o actualizamos en la base de datos
+            # 2. Guardamos o actualizamos en la base de datos. Evita duplicados
             Attendance.objects.update_or_create(
                 group_id=group_id,
                 beneficiary_id=student_id,
@@ -236,7 +236,7 @@ def family_case_archive(request, case_id):
     case = get_object_or_404(FamilyCase, id=case_id)
     
     if request.method == 'POST':
-        case.is_archived = not case.is_archiived
+        case.is_archived = not case.is_archived
         case.save()
         return redirect('family_case_detail', case_id=case.id)
     

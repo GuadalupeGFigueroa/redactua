@@ -11,8 +11,6 @@ class BeneficiaryFormTest(TestCase):
         future_date = date.today() + timedelta(days=1)
         
         # Simulamos los datos que enviaría el usuario por POST
-        # (Si tienes otros campos obligatorios sin valor por defecto en tu modelo, 
-        # como el DNI, añádelos a este diccionario para que no falle por otra causa)
         form_data = {
             'first_name': 'Viajero',
             'last_name1': 'Del Tiempo',
@@ -26,5 +24,5 @@ class BeneficiaryFormTest(TestCase):
         # 3. COMPROBAR: El formulario NO debe ser válido
         self.assertFalse(form.is_valid())
         
-        # Además, comprobamos que el error salta específicamente en la fecha
+        # Comprobamos que el error salta específicamente en la fecha
         self.assertIn('birth_date', form.errors)

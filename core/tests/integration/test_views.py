@@ -1,14 +1,13 @@
 from django.contrib.auth.models import Permission
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model  # <-- CAMBIO CLAVE
+from django.contrib.auth import get_user_model 
 from core.models import FamilyCase
 
 # Le pedimos a Django que nos traiga tu modelo personalizado (Worker)
 User = get_user_model()
 
 class SecurityViewsTest(TestCase):
-    
     def setUp(self):
         """Preparamos el entorno antes de cada prueba"""
         # 1. Creamos el navegador virtual
